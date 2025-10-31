@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🎙️ School Voice — النسخة النهائية المستقرة</title>
+<title>🎙️ School Voice — النسخة النهائية</title>
 <style>
 :root { --bg1:#081325; --bg2:#391a61; }
 body {
@@ -44,7 +44,7 @@ button {
 <body>
   <div class="card">
     <h2>🎧 School Voice</h2>
-    <p>اكتب اسم الغرفة واضغط "انضم" على جهازين مختلفين بنفس الاسم لتسمع الصوت بينهما.</p>
+    <p>اكتب اسم الغرفة واضغط "انضم" على جهازين بنفس الاسم لتسمع الصوت بينهما.</p>
     <div class="row">
       <input id="room" placeholder="اسم الغرفة (مثلاً: room1)" />
       <button id="join">انضم</button>
@@ -62,7 +62,7 @@ button {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue, onChildAdded, remove, get, onDisconnect } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-// 🔧 Firebase config
+// 🔧 إعداد Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
   authDomain: "school-voice-1b1dc.firebaseapp.com",
@@ -99,7 +99,7 @@ async function joinRoom() {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch {
-    return alert("🚫 لم يُسمح بالمايكروفون، يرجى الموافقة على إذن الصوت.");
+    return alert("🚫 لم يُسمح بالمايكروفون، يرجى السماح به.");
   }
 
   muteBtn.style.display = "inline-block";
@@ -141,8 +141,8 @@ async function joinRoom() {
   const peers = peersSnap.val() || {};
   for (const id in peers) if (id !== peerId) await createPC(id, true);
 
-  statusEl.textContent = `✅ متصل الآن في الغرفة "${roomName}"`;
-  overlay.style.display = "flex"; // لإجبار المستخدم على الضغط لتفعيل الصوت
+  statusEl.textContent = `✅ متصل في "${roomName}"`;
+  overlay.style.display = "flex";
 }
 
 async function createPC(otherId, offerer = false) {
@@ -158,15 +158,14 @@ async function createPC(otherId, offerer = false) {
       a = document.createElement("audio");
       a.autoplay = true;
       a.playsInline = true;
-      a.controls = false;
       a.muted = false;
-      a.setAttribute("playsinline", true);
-      a.setAttribute("autoplay", true);
       audios[otherId] = a;
       peersEl.appendChild(a);
     }
     a.srcObject = e.streams[0];
-    a.play().catch(()=>{});
+
+    // ✅ إجبار الصوت على التشغيل فور وصوله
+    setTimeout(() => { a.play().catch(()=>{}); }, 500);
   };
 
   pc.onicecandidate = (e) => {
@@ -187,13 +186,8 @@ function sendSig(target, data) {
 
 function renderPeers(list) {
   peersEl.innerHTML = "";
-  if (!list.length) {
-    peersEl.innerHTML = "<div class='peer'>لا أحد متصل حالياً</div>";
-    return;
-  }
-  list.forEach(id => {
-    peersEl.innerHTML += `<div class='peer'>🎙️ مستخدم ${id}</div>`;
-  });
+  if (!list.length) return peersEl.innerHTML = "<div class='peer'>لا أحد متصل حالياً</div>";
+  list.forEach(id => peersEl.innerHTML += `<div class='peer'>🎙️ مستخدم ${id}</div>`);
 }
 
 function toggleMic() {
@@ -210,4 +204,4 @@ function enableAudioPlayback() {
 }
 </script>
 </body>
-</html>   مفيش فايده برضو
+</html>
