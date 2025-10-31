@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🎙️ School Voice — النسخة النهائية</title>
+<title>🎙️ School Voice — النسخة النهائية المستقرة</title>
 <style>
 :root { --bg1:#081325; --bg2:#391a61; }
 body {
@@ -27,7 +27,7 @@ button {
 }
 .row { display:flex; gap:8px; }
 .status { margin-top:12px; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; font-size:14px; }
-.peers { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.peers { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
 .peer { background:rgba(255,255,255,0.08); padding:6px 10px; border-radius:8px; font-size:13px; }
 .overlay {
   position:fixed; inset:0; background:rgba(0,0,0,0.7);
@@ -44,25 +44,25 @@ button {
 <body>
   <div class="card">
     <h2>🎧 School Voice</h2>
-    <p>اكتب اسم الغرفة ثم اضغط “انضم” على جهازين مختلفين بنفس الاسم.</p>
+    <p>اكتب اسم الغرفة واضغط "انضم" على جهازين مختلفين بنفس الاسم لتسمع الصوت بينهما.</p>
     <div class="row">
       <input id="room" placeholder="اسم الغرفة (مثلاً: room1)" />
       <button id="join">انضم</button>
     </div>
     <button id="mute" style="display:none;margin-top:10px;background:#ff4d4d;">🔇 كتم المايك</button>
     <div class="status" id="status">غير متصل</div>
-    <div class="peers" id="peers"><div class="peer">لا أحد</div></div>
+    <div class="peers" id="peers"><div class="peer">لا أحد متصل حالياً</div></div>
   </div>
 
   <div id="overlay" class="overlay" style="display:none">
-    <button id="startAudio">🎵 اضغط لتشغيل الصوت</button>
+    <button id="startAudio">🎵 اضغط لتفعيل الصوت</button>
   </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getDatabase, ref, set, push, onValue, onChildAdded, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { getDatabase, ref, set, push, onValue, onChildAdded, remove, get, onDisconnect } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-// Firebase config
+// 🔧 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
   authDomain: "school-voice-1b1dc.firebaseapp.com",
@@ -89,103 +89,125 @@ const pcs = {}, audios = {};
 const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
 joinBtn.onclick = joinRoom;
-muteBtn.onclick = () => {
-  micEnabled = !micEnabled;
-  localStream?.getAudioTracks().forEach(t => t.enabled = micEnabled);
-  muteBtn.textContent = micEnabled ? "🔇 كتم المايك" : "🎙️ تشغيل المايك";
-};
+muteBtn.onclick = toggleMic;
+startAudioBtn.onclick = enableAudioPlayback;
 
-async function joinRoom(){
+async function joinRoom() {
   roomName = roomInput.value.trim();
-  if(!roomName) return alert("اكتب اسم الغرفة أولاً");
+  if (!roomName) return alert("⚠️ اكتب اسم الغرفة أولاً.");
+
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch {
-    return alert("يرجى السماح باستخدام المايكروفون.");
+    return alert("🚫 لم يُسمح بالمايكروفون، يرجى الموافقة على إذن الصوت.");
   }
 
   muteBtn.style.display = "inline-block";
   statusEl.textContent = "📡 جاري الاتصال...";
+
   const myRef = ref(db, `rooms/${roomName}/peers/${peerId}`);
-  set(myRef, { id: peerId });
+  await set(myRef, { id: peerId });
   onDisconnect(myRef).remove();
 
   const peersRef = ref(db, `rooms/${roomName}/peers`);
-  onValue(peersRef, (snap)=>{
-    const peers = Object.keys(snap.val()||{}).filter(i=>i!==peerId);
+  onValue(peersRef, (snap) => {
+    const peers = Object.keys(snap.val() || {}).filter(p => p !== peerId);
     renderPeers(peers);
   });
 
-  const mySig = ref(db, `signals/${roomName}/${peerId}`);
-  onChildAdded(mySig, async (snap)=>{
-    const msg = snap.val(); if(!msg) return;
+  const sigRef = ref(db, `signals/${roomName}/${peerId}`);
+  onChildAdded(sigRef, async (snap) => {
+    const msg = snap.val(); if (!msg) return;
     const from = msg.from;
-    if(msg.type==="offer"){
-      const pc = await createPC(from);
-      await pc.setRemoteDescription(msg.sdp);
-      const ans = await pc.createAnswer();
-      await pc.setLocalDescription(ans);
-      sendSig(from,{from:peerId,type:"answer",sdp:pc.localDescription});
-    } else if(msg.type==="answer"){
-      pcs[from]?.setRemoteDescription(msg.sdp);
-    } else if(msg.type==="ice"){
-      if(msg.candidate) pcs[from]?.addIceCandidate(msg.candidate).catch(()=>{});
+    switch (msg.type) {
+      case "offer":
+        const pc1 = await createPC(from);
+        await pc1.setRemoteDescription(msg.sdp);
+        const ans = await pc1.createAnswer();
+        await pc1.setLocalDescription(ans);
+        sendSig(from, { from: peerId, type: "answer", sdp: pc1.localDescription });
+        break;
+      case "answer":
+        pcs[from]?.setRemoteDescription(msg.sdp);
+        break;
+      case "ice":
+        if (msg.candidate) pcs[from]?.addIceCandidate(msg.candidate).catch(()=>{});
+        break;
     }
     remove(snap.ref);
   });
 
-  const peersSnap = await (await import("https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js"))
-    .get(ref(db, `rooms/${roomName}/peers`));
-  const peers = peersSnap.val()||{};
-  for(const id in peers) if(id!==peerId) await createPC(id,true);
+  const peersSnap = await get(ref(db, `rooms/${roomName}/peers`));
+  const peers = peersSnap.val() || {};
+  for (const id in peers) if (id !== peerId) await createPC(id, true);
 
-  statusEl.textContent = `✅ متصل في "${roomName}"`;
-  overlay.style.display = "flex"; // لإجبار المستخدم على تفعيل الصوت
+  statusEl.textContent = `✅ متصل الآن في الغرفة "${roomName}"`;
+  overlay.style.display = "flex"; // لإجبار المستخدم على الضغط لتفعيل الصوت
 }
 
-async function createPC(otherId, offerer=false){
-  if(pcs[otherId]) return pcs[otherId];
+async function createPC(otherId, offerer = false) {
+  if (pcs[otherId]) return pcs[otherId];
   const pc = new RTCPeerConnection(config);
   pcs[otherId] = pc;
-  localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
 
-  pc.ontrack = (e)=>{
+  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+  pc.ontrack = (e) => {
     let a = audios[otherId];
-    if(!a){
+    if (!a) {
       a = document.createElement("audio");
-      a.autoplay = true; a.controls = false; a.playsInline = true;
+      a.autoplay = true;
+      a.playsInline = true;
+      a.controls = false;
+      a.muted = false;
+      a.setAttribute("playsinline", true);
+      a.setAttribute("autoplay", true);
       audios[otherId] = a;
       peersEl.appendChild(a);
     }
     a.srcObject = e.streams[0];
+    a.play().catch(()=>{});
   };
-  pc.onicecandidate = (e)=>{
-    if(e.candidate) sendSig(otherId,{from:peerId,type:"ice",candidate:e.candidate});
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate) sendSig(otherId, { from: peerId, type: "ice", candidate: e.candidate });
   };
-  if(offerer){
+
+  if (offerer) {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    sendSig(otherId,{from:peerId,type:"offer",sdp:pc.localDescription});
+    sendSig(otherId, { from: peerId, type: "offer", sdp: pc.localDescription });
   }
   return pc;
 }
 
-function sendSig(target,data){
-  push(ref(db,`signals/${roomName}/${target}`),data);
+function sendSig(target, data) {
+  push(ref(db, `signals/${roomName}/${target}`), data);
 }
 
-function renderPeers(list){
+function renderPeers(list) {
   peersEl.innerHTML = "";
-  if(!list.length){ peersEl.innerHTML = "<div class='peer'>لا أحد</div>"; return; }
-  list.forEach(id=> peersEl.innerHTML += `<div class='peer'>🎙️ مستخدم ${id}</div>`);
+  if (!list.length) {
+    peersEl.innerHTML = "<div class='peer'>لا أحد متصل حالياً</div>";
+    return;
+  }
+  list.forEach(id => {
+    peersEl.innerHTML += `<div class='peer'>🎙️ مستخدم ${id}</div>`;
+  });
 }
 
-startAudioBtn.onclick = ()=>{
-  Object.values(audios).forEach(a=>{
-    try { a.muted=false; a.play().catch(()=>{}); } catch{}
+function toggleMic() {
+  micEnabled = !micEnabled;
+  localStream?.getAudioTracks().forEach(t => t.enabled = micEnabled);
+  muteBtn.textContent = micEnabled ? "🔇 كتم المايك" : "🎙️ تشغيل المايك";
+}
+
+function enableAudioPlayback() {
+  Object.values(audios).forEach(a => {
+    try { a.muted = false; a.play().catch(()=>{}); } catch {}
   });
-  overlay.style.display="none";
-};
+  overlay.style.display = "none";
+}
 </script>
 </body>
 </html>
