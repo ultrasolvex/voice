@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>School Voice — نسخة محسّنة</title>
+<style>
+  :root{--bg1:#07162a;--bg2:#3a1a63}
+  html,body{height:100%;margin:0;font-family:'Tajawal',sans-serif;background:linear-gradient(to bottom,var(--bg1),var(--bg2));color:#fff;display:flex;align-items:center;justify-content:center}
+  .card{width:96%;max-width:720px;background:rgba(255,255,255,0.04);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+  h1{margin:0 0 8px;font-size:21px}
+  p{margin:6px 0 14px;color:rgba(255,255,255,0.85)}
+  input{flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.08);color:#fff}
+  button{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;background:linear-gradient(90deg,#6d2fb0,#2c77ff54)}
+  .rooms{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow:auto;padding-right:6px}
+  .room-btn{background:rgba(255,255,255,0.08);border-radius:10px;padding:10px;text-align:center;cursor:pointer}
+  .status{margin-top:12px;padding:12px;border-radius:10px;background:rgba(0,0,0,0.25);font-size:14px}
+  .participants{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .part{background:rgba(255,255,255,0.06);padding:8px;border-radius:8px;font-size:13px}
+  footer{margin-top:12px;font-size:12px;opacity:.8}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎙️ School Voice — الصوت الواضح</h1>
+    <p>ادخل اسم الروم واضغط (ادخل). ستتصل تلقائيًا بكل من في الروم. الصوت مُحسّن لأقصى وضوح.</p>
+
+    <div style="display:flex;gap:8px">
+      <input id="roomInput" placeholder="اسم الروم (مثال: استراحة-المدرسة)" />
+      <button id="joinBtn">ادخل</button>
+    </div>
+
+    <h3 style="margin-top:16px;margin-bottom:6px">🗂 الرومات المفتوحة</h3>
+    <div id="roomsList" class="rooms">جاري التحميل...</div>
+
+    <h3 style="margin-top:16px;margin-bottom:6px">👥 الموجودين الآن</h3>
+    <div id="peers" class="participants"><div class="part">لا أحد</div></div>
+
+    <div id="status" class="status">الحالة: غير متصل</div>
+    <footer>محسّن حتى 4 أشخاص بصوت نقي • ملف واحد فقط • مجاني 100%</footer>
+  </div>
+
+<script type="module">
+// ===== إعداد Firebase =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import {
+  getDatabase, ref, set, onValue, push,
+  onChildAdded, remove, onChildRemoved, onDisconnect
+} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
+  authDomain: "school-voice-1b1dc.firebaseapp.com",
+  databaseURL: "https://school-voice-1b1dc-default-rtdb.firebaseio.com",
+  projectId: "school-voice-1b1dc",
+  storageBucket: "school-voice-1b1dc.firebasestorage.app",
+  messagingSenderId: "990135804919",
+  appId: "1:990135804919:web:38c050a3a2ed1cb8d304f2"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ===== عناصر الواجهة =====
+const joinBtn = document.getElementById("joinBtn");
+const roomInput = document.getElementById("roomInput");
+const roomsList = document.getElementById("roomsList");
+const peersEl = document.getElementById("peers");
+const statusEl = document.getElementById("status");
+
+// ===== متغيرات عامة =====
+const peerId = crypto.randomUUID ? crypto.randomUUID() : "p-"+Math.random().toString(36).slice(2,9);
+let roomName = null;
+let localStream = null;
+const pcs = {}, audioEls = {};
+const RTC_CONFIG = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+// ===== عرض الرومات =====
+onValue(ref(db, "rooms"), (snap)=>{
+  const val = snap.val();
+  roomsList.innerHTML = "";
+  if(!val){ roomsList.innerHTML="<div>لا توجد رومات حالياً</div>"; return; }
+  Object.keys(val).forEach(r=>{
+    const d=document.createElement("div");
+    d.className="room-btn";
+    d.textContent=r;
+    d.onclick=()=>{ roomInput.value=r; joinRoom(); };
+    roomsList.appendChild(d);
+  });
+});
+
+// ===== دالة الانضمام =====
+joinBtn.onclick = joinRoom;
+async function joinRoom(){
+  const r = roomInput.value.trim();
+  if(!r) return alert("اكتب اسم الروم أولاً");
+  roomName = r;
+  statusEl.textContent = `جاري فتح المايك...`;
+
+  try {
+    // فتح المايك بجودة عالية
+    localStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1
+      }
+    });
+
+    const myPeerRef = ref(db, `rooms/${roomName}/peers/${peerId}`);
+    await set(myPeerRef, { id: peerId, ts: Date.now() });
+    onDisconnect(myPeerRef).remove();
+
+    const peersRef = ref(db, `rooms/${roomName}/peers`);
+    onValue(peersRef, (snap)=>{
+      const data = snap.val() || {};
+      const others = Object.keys(data).filter(id=>id!==peerId);
+      renderPeersList(others);
+      if(others.length > 4){
+        statusEl.textContent = `⚠️ الروم مزدحمة (${others.length} أشخاص) — قد يضعف الصوت.`;
+      }
+    });
+
+    // الاستماع للـ signals الخاصة بي
+    const mySig = ref(db, `signals/${roomName}/${peerId}`);
+    onChildAdded(mySig, async (snap)=>{
+      const msg = snap.val(); if(!msg) return;
+      const { from, type } = msg;
+      if(type==="offer"){
+        await ensurePC(from,false);
+        const pc = pcs[from];
+        await pc.setRemoteDescription(msg.sdp);
+        const ans = await pc.createAnswer();
+        await pc.setLocalDescription(ans);
+        sendSignal(from,{from:peerId,type:"answer",sdp:pc.localDescription});
+      }else if(type==="answer"){
+        const pc = pcs[from]; if(pc) await pc.setRemoteDescription(msg.sdp);
+      }else if(type==="ice"){
+        const pc = pcs[from]; if(pc && msg.candidate) try{await pc.addIceCandidate(msg.candidate);}catch{}
+      }
+      remove(snap.ref);
+    });
+
+    // أرسل offers للموجودين قبلك
+    const peersSnap = await new Promise(res=>onValue(peersRef, s=>res(s),{onlyOnce:true}));
+    const peers = peersSnap.val()||{};
+    for(const id in peers){ if(id!==peerId) await ensurePC(id,true); }
+
+    statusEl.textContent = `🎧 متصل الآن في "${roomName}" — الصوت واضح`;
+  }catch(e){
+    console.error(e);
+    alert("خطأ في فتح المايك أو الاتصال.");
+    statusEl.textContent="خطأ في الاتصال.";
+  }
+}
+
+// ===== إنشاء PeerConnection =====
+async function ensurePC(otherId,makeOffer){
+  if(pcs[otherId]) return pcs[otherId];
+  const pc = new RTCPeerConnection(RTC_CONFIG);
+  pcs[otherId] = pc;
+
+  // إضافة الصوت
+  if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+
+  // استقبال الصوت
+  pc.ontrack = (e)=>{
+    if(!audioEls[otherId]){
+      const a=document.createElement("audio");
+      a.autoplay=true;
+      a.controls=false;
+      a.srcObject=e.streams[0];
+      audioEls[otherId]=a;
+      renderPeersList(Object.keys(pcs));
+    }
+  };
+
+  pc.onicecandidate = (ev)=>{
+    if(ev.candidate) sendSignal(otherId,{from:peerId,type:"ice",candidate:ev.candidate});
+  };
+  pc.onconnectionstatechange = ()=>{
+    if(["failed","disconnected","closed"].includes(pc.connectionState)) closePeer(otherId);
+  };
+
+  if(makeOffer){
+    const offer = await pc.createOffer({offerToReceiveAudio:true});
+    await pc.setLocalDescription(offer);
+    sendSignal(otherId,{from:peerId,type:"offer",sdp:pc.localDescription});
+  }
+  return pc;
+}
+
+// ===== إرسال إشارة =====
+function sendSignal(target,payload){
+  push(ref(db,`signals/${roomName}/${target}`),payload);
+}
+
+// ===== عرض المشاركين =====
+function renderPeersList(list){
+  peersEl.innerHTML="";
+  if(!list || !list.length){peersEl.innerHTML='<div class="part">لا أحد</div>';return;}
+  list.forEach(id=>{
+    const d=document.createElement("div");
+    d.className="part";
+    d.textContent="مستخدم "+id.slice(0,6);
+    if(audioEls[id]) d.appendChild(audioEls[id]);
+    peersEl.appendChild(d);
+  });
+}
+
+// ===== تنظيف عند الخروج =====
+window.addEventListener("beforeunload",()=>{
+  try{ remove(ref(db,`rooms/${roomName}/peers/${peerId}`)); }catch{}
+});
+</script>
+</body>
+</html>
