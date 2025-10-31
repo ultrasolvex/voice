@@ -1,368 +1,531 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>🎙️ School Voice — إصدار محسن</title>
-<style>
-:root{--bg1:#081325;--bg2:#391a61}
-html,body{height:100%;margin:0;font-family:'Tajawal',sans-serif;color:#fff;background:linear-gradient(180deg,var(--bg1),var(--bg2))}
-.container{max-width:900px;margin:24px auto;padding:18px;border-radius:14px;background:rgba(255,255,255,0.04);box-shadow:0 12px 30px rgba(0,0,0,0.5)}
-.row{display:flex;gap:8px}
-input,button{border:0;border-radius:10px;padding:10px;font-size:16px}
-input{flex:1;background:rgba(255,255,255,0.06);color:#fff}
-button{background:linear-gradient(90deg,#6d2fb0,#2c77ff);color:#fff;cursor:pointer;font-weight:600}
-.status{margin-top:12px;background:rgba(0,0,0,0.28);padding:10px;border-radius:10px;font-size:14px}
-.peers{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-.peer{background:rgba(255,255,255,0.06);padding:8px;border-radius:8px}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:9999}
-.overlay button{padding:14px 22px;font-size:18px;border-radius:12px;background:linear-gradient(90deg,#6d2fb0,#2c77ff);border:none;color:#fff;cursor:pointer}
-audio{display:block;width:100%;margin-top:8px;border-radius:8px}
-.small{font-size:13px;color:#ddd;margin-top:6px}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>School Voice — رومات صوتية</title>
+
+  <style>
+    :root{
+      --bg:#010817; /* فخم جداً */
+      --panel:#071529;
+      --muted:#8eaed0;
+      --accent:#74a9ff;
+      --glass: rgba(255,255,255,0.02);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: 'Tajawal', Tahoma, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #000a12);
+      color: #eaf4ff;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+
+    header{
+      width:100%;
+      max-width:980px;
+      padding:18px 16px;
+      text-align:center;
+      color:var(--accent);
+      font-weight:700;
+      font-size:18px;
+      border-bottom:1px solid rgba(255,255,255,0.02);
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    }
+
+    main{
+      width:100%;
+      max-width:980px;
+      padding:20px;
+      display:flex;
+      gap:20px;
+    }
+
+    /* home / list */
+    .left{
+      flex:1;
+    }
+
+    .panel{
+      background:var(--panel);
+      border-radius:12px;
+      padding:14px;
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    }
+
+    .rooms-list{display:flex;flex-direction:column;gap:10px; margin-top:8px}
+    .room-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px;
+      border-radius:10px;
+      background:var(--glass);
+      cursor:pointer;
+      transition: transform .12s, background .12s;
+    }
+    .room-item:hover{ transform: translateY(-3px); background: rgba(255,255,255,0.04) }
+
+    .room-title{font-weight:700}
+    .room-sub{color:var(--muted);font-size:13px}
+
+    .badge{
+      background: rgba(255,255,255,0.03);
+      padding:6px 10px;
+      border-radius:999px;
+      color:var(--muted);
+      font-size:13px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    /* right column - actions */
+    .right{
+      width:320px;
+      display:flex;flex-direction:column;gap:14px;
+    }
+
+    .btn{
+      background: linear-gradient(90deg,#08325a,#144f82);
+      color:white;
+      border:none;
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      width:100%;
+    }
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
+    .small{color:var(--muted);font-size:13px}
+
+    footer{
+      width:100%;
+      max-width:980px;
+      padding:14px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* room view (Jitsi) */
+    #roomView{ display:none; width:100%;}
+    .room-header{
+      display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid rgba(255,255,255,0.02)
+    }
+    .jitsi-wrap{height:560px;border-radius:10px;overflow:hidden;background:#000;margin-top:10px}
+
+    /* responsive */
+    @media(max-width:900px){
+      main{flex-direction:column}
+      .right{width:100%}
+      .jitsi-wrap{height:420px}
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>🎧 School Voice — الإصدار المحسّن</h2>
-    <p class="small">اكتب اسم الغرفة واضغط "انضم" على جهازين مختلفين بنفس الاسم. إذا منع المتصفح الصوت — اضغط زر تفعيل الصوت الظاهر بعد الاتصال.</p>
 
-    <div class="row">
-      <input id="room" placeholder="اسم الغرفة (مثلاً: room1)"/>
-      <button id="join">انضم</button>
+  <header>🎧 School Voice — غرف صوتية تفاعلية</header>
+
+  <main>
+    <!-- home -->
+    <div class="left">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:800;font-size:16px">الرومات المفتوحة</div>
+            <div class="small">انضم إلى أي روم للتحدث مع أصدقائك</div>
+          </div>
+          <div id="totalRooms" class="small">0 روم</div>
+        </div>
+
+        <div class="rooms-list" id="roomsList">
+          <!-- عناصر الرومات تظهر هنا -->
+        </div>
+      </div>
     </div>
 
-    <div style="margin-top:10px">
-      <button id="mute" style="display:none;background:#ff4d4d">🔇 كتم المايك</button>
-      <button id="leave" style="display:none;margin-left:8px;background:#666">⏹️ اترك الغرفة</button>
+    <!-- actions -->
+    <aside class="right">
+      <div class="panel">
+        <div style="font-weight:800">إنشاء روم جديد</div>
+        <div class="small" style="margin-top:8px">أدخل اسم الروم ثم اضغط إنشاء — سيصبح الروم مفتوحًا تلقائيًا عند دخولك.</div>
+        <input id="newRoomName" placeholder="اسم الروم..." style="margin-top:10px;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit;width:100%"/>
+        <button id="createRoomBtn" class="btn" style="margin-top:10px">➕ إنشاء والانضمام</button>
+        <button id="refreshBtn" class="btn ghost" style="margin-top:8px">تحديث</button>
+      </div>
+
+      <div class="panel">
+        <div style="font-weight:800">تعليمات سريعة</div>
+        <div class="small" style="margin-top:8px;line-height:1.6">
+          • عندما تنضم، يمنحك الموقع حضورًا في الروم ويظهر اسمك للمستخدمين الآخرين. <br/>
+          • عند الخروج (أو غلق التبويب)، يتم إزالة حضورك تلقائيًا؛ وإذا أصبح عدد الحاضرين صفر تُحذف الروم من القائمة. <br/>
+          • المتصفح سيطلب إذن الميكروفون عند الحاجة.
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- room view (hidden until join) -->
+  <div id="roomView" style="width:100%;max-width:980px;margin-bottom:18px">
+    <div class="panel">
+      <div class="room-header">
+        <div>
+          <div id="roomNameDisplay" style="font-weight:800;font-size:16px">الروم</div>
+          <div id="roomCountDisplay" class="small" style="margin-top:6px">0 مشارك</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="muteBtn" class="btn" style="padding:8px 12px;font-weight:700">كتم / تشغيل المايك</button>
+          <button id="leaveBtn" class="btn ghost" style="padding:8px 12px">🚪 خروج</button>
+        </div>
+      </div>
+
+      <div class="jitsi-wrap" id="jitsiContainer"></div>
     </div>
-
-    <div class="status" id="status">غير متصل</div>
-    <div class="peers" id="peers"><div class="peer">لا أحد متصل حالياً</div></div>
   </div>
 
-  <div id="overlay" class="overlay" style="display:none">
-    <button id="enableAudioBtn">🎵 اضغط لتفعيل الصوت الآن</button>
-  </div>
+  <footer>© 2025 School Voice — مصمم للمدارس</footer>
 
-<script type="module">
-/* ========== imports Firebase ========== */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import {
-  getDatabase, ref, set, push, onValue, onChildAdded, remove, get, onDisconnect
-} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+  <!-- Firebase (modules) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getDatabase, ref, push, set, onChildAdded, onChildRemoved, onValue, remove, onDisconnect, get, child } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-/* ====== إعداد Firebase - استخدم إعدادك الخاص لو عندك ====== */
-const firebaseConfig = {
-  apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
-  authDomain: "school-voice-1b1dc.firebaseapp.com",
-  databaseURL: "https://school-voice-1b1dc-default-rtdb.firebaseio.com",
-  projectId: "school-voice-1b1dc",
-  storageBucket: "school-voice-1b1dc.firebasestorage.app",
-  messagingSenderId: "990135804919",
-  appId: "1:990135804919:web:38c050a3a2ed1cb8d304f2"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-/* ====== عناصر الواجهة ====== */
-const joinBtn = document.getElementById('join');
-const muteBtn = document.getElementById('mute');
-const leaveBtn = document.getElementById('leave');
-const roomInput = document.getElementById('room');
-const statusEl = document.getElementById('status');
-const peersEl = document.getElementById('peers');
-const overlay = document.getElementById('overlay');
-const enableAudioBtn = document.getElementById('enableAudioBtn');
-
-/* ====== متغيرات الحالة ====== */
-let roomName = null;
-let localStream = null;
-let micEnabled = true;
-const peerId = Math.random().toString(36).slice(2,9);
-const pcs = {};            // RTCPeerConnection per remote peer
-const audios = {};         // audio elements per remote peer
-const candidateQueues = {}; // queue ICE candidates until pc ready
-const answered = {};       // flags when answered received
-const OFFER_RETRY_MS = 1200; // retry offer frequency
-const offerTimers = {};    // timers per target to resend offers
-const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
-
-/* ====== event listeners UI ====== */
-joinBtn.onclick = joinRoom;
-muteBtn.onclick = toggleMic;
-leaveBtn.onclick = leaveRoom;
-enableAudioBtn.onclick = enableAudioPlayback;
-
-/* ====== مساعدة: تحديث الحالة ====== */
-function setStatus(txt){
-  statusEl.textContent = txt;
-  console.log('[STATUS]', txt);
-}
-
-/* ====== دالة لإنشاء AudioContext و resume (لحل منع التشغيل) ====== */
-let audioContext = null;
-async function resumeAudioContext() {
-  try {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioContext.state === 'suspended') await audioContext.resume();
-    // play a silent buffer to ensure audio is unlocked on some Safari versions
-    const buf = audioContext.createBuffer(1, 1, 22050);
-    const src = audioContext.createBufferSource();
-    src.buffer = buf;
-    src.connect(audioContext.destination);
-    src.start();
-    src.stop();
-    console.log('AudioContext resumed');
-  } catch (e) {
-    console.warn('resumeAudioContext failed', e);
-  }
-}
-
-/* ====== دالة لفتح المايك والانضمام ====== */
-async function joinRoom(){
-  roomName = roomInput.value.trim();
-  if(!roomName){ alert('اكتب اسم الغرفة أولاً'); return; }
-
-  setStatus('📡 طلب إذن المايك...');
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  } catch (e) {
-    alert('يرجى السماح بالمايكروفون في المتصفح.');
-    setStatus('🚫 لم يتم السماح بالمايك');
-    return;
-  }
-
-  // اجعل الـ UI جاهز
-  muteBtn.style.display = 'inline-block';
-  leaveBtn.style.display = 'inline-block';
-  joinBtn.disabled = true;
-  roomInput.disabled = true;
-
-  // سجل وجودك في الغرفة في Firebase وامسح عند الانفصال
-  const myRef = ref(db, `rooms/${roomName}/peers/${peerId}`);
-  await set(myRef, { id: peerId, ts: Date.now() });
-  onDisconnect(myRef).remove();
-
-  // استمع لتغييرات قائمة الأقران وعرضهم
-  const peersRef = ref(db, `rooms/${roomName}/peers`);
-  onValue(peersRef, snap=>{
-    const obj = snap.val() || {};
-    const others = Object.keys(obj).filter(id=>id!==peerId);
-    renderPeers(others);
-  });
-
-  // استمع للإشارات الموجهة إليك
-  const mySigRef = ref(db, `signals/${roomName}/${peerId}`);
-  onChildAdded(mySigRef, async snap=>{
-    const msg = snap.val(); if(!msg) return;
-    const from = msg.from;
-    console.log('recv msg', msg);
-    if(msg.type === 'offer'){
-      // رد على العرض
-      const pc = await createPC(from, false);
-      await pc.setRemoteDescription(msg.sdp).catch(e=>console.warn('setRemoteDescription offer failed',e));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      sendSig(from, { from: peerId, type: 'answer', sdp: pc.localDescription });
-      // بعد الرد، نعالج أي مرشحين مجمّعين
-      (candidateQueues[from]||[]).forEach(c=>pc.addIceCandidate(c).catch(()=>{}));
-      candidateQueues[from] = [];
-    }
-    else if(msg.type === 'answer'){
-      if(pcs[from]){
-        await pcs[from].setRemoteDescription(msg.sdp).catch(e=>console.warn('setRemoteDescription answer failed',e));
-        answered[from] = true;
-        // أوقف إعادة إرسال العرض
-        clearInterval(offerTimers[from]);
-        offerTimers[from] = null;
-        // اطبق أي مرشحين مؤجلين
-        (candidateQueues[from]||[]).forEach(c=>pcs[from].addIceCandidate(c).catch(()=>{}));
-        candidateQueues[from] = [];
-      }
-    }
-    else if(msg.type === 'ice'){
-      if(pcs[from]){
-        pcs[from].addIceCandidate(msg.candidate).catch(()=>{});
-      } else {
-        // إذا pc غير جاهز بعد، خزّن المرشح مؤقتًا
-        candidateQueues[from] = candidateQueues[from] || [];
-        candidateQueues[from].push(msg.candidate);
-      }
-    }
-    // امسح الرسالة بعد معالجتها (تنظيف)
-    remove(snap.ref).catch(()=>{});
-  });
-
-  // تهيئة: اتصل بكل الأقران الموجودين الآن (اجلب قائمة الموجودين)
-  const snap = await get(ref(db, `rooms/${roomName}/peers`));
-  const present = snap.val() || {};
-  for(const id in present){
-    if(id === peerId) continue;
-    // انشئ اتصال وكن offerer
-    await createPC(id, true);
-  }
-
-  setStatus(`✅ متصل في "${roomName}" — اضغط زر تفعيل الصوت (إذا ظهر).`);
-  // عرض الoverlay لالتقاط تفاعل المستخدم لتمكين التشغيل
-  overlay.style.display = 'flex';
-
-  // فور الانضمام، حاول resume AudioContext (للمتصفحات اللي تحتاج تفاعل)
-  await resumeAudioContext();
-}
-
-/* ====== دالة إنشاء RTCPeerConnection مع retry للـ offer ====== */
-async function createPC(otherId, offerer=false){
-  if(pcs[otherId]) return pcs[otherId];
-  console.log('createPC', otherId, 'offerer=', offerer);
-  const pc = new RTCPeerConnection(config);
-  pcs[otherId] = pc;
-  answered[otherId] = false;
-  candidateQueues[otherId] = candidateQueues[otherId] || [];
-
-  // أضف المسارات المحلية
-  if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t, localStream));
-
-  pc.ontrack = (e)=>{
-    console.log('ontrack from', otherId, e.streams);
-    let a = audios[otherId];
-    if(!a){
-      a = document.createElement('audio');
-      a.autoplay = true;
-      a.playsInline = true;
-      a.controls = false;
-      a.muted = false;
-      a.setAttribute('playsinline','');
-      audios[otherId] = a;
-      peersEl.appendChild(a);
-    }
-    a.srcObject = e.streams[0];
-    // محاولة تشغيل العنصر فورًا (بعد تفعيل الصوت)
-    a.play().catch(()=>{});
-    setStatus(`🎧 استقبال صوتي من ${otherId}`);
-  };
-
-  pc.onicecandidate = (ev)=>{
-    if(ev.candidate){
-      sendSig(otherId, { from: peerId, type: 'ice', candidate: ev.candidate });
-    }
-  };
-
-  pc.onconnectionstatechange = ()=>{
-    console.log('connectionState', otherId, pc.connectionState);
-    if(pc.connectionState === 'disconnected' || pc.connectionState === 'failed' || pc.connectionState === 'closed'){
-      // نظف
-      closePeer(otherId);
-    }
-  };
-
-  // إذا دورنا offerer — انشئ عرض وارسله (مع retry)
-  if(offerer){
-    const doOffer = async ()=>{
-      try{
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        sendSig(otherId, { from: peerId, type: 'offer', sdp: pc.localDescription });
-      }catch(e){
-        console.warn('offer error', e);
-      }
+    // ---------- ضع هنا إعدادات Firebase التي أعطيتَها ----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
+      authDomain: "school-voice-1b1dc.firebaseapp.com",
+      databaseURL: "https://school-voice-1b1dc-default-rtdb.firebaseio.com",
+      projectId: "school-voice-1b1dc",
+      storageBucket: "school-voice-1b1dc.firebasestorage.app",
+      messagingSenderId: "990135804919",
+      appId: "1:990135804919:web:38c050a3a2ed1cb8d304f2",
+      measurementId: "G-Y8Z1NP232P"
     };
-    // ارسال أولي ثم تكرار حتى يصل answer أو يصير تجاوز وقتي
-    await doOffer();
-    offerTimers[otherId] = setInterval(async ()=>{
-      if(answered[otherId]) { clearInterval(offerTimers[otherId]); offerTimers[otherId]=null; return; }
-      console.log('resend offer to', otherId);
-      await doOffer();
-    }, OFFER_RETRY_MS);
-  }
-  return pc;
-}
+    // ---------------------------------------------------------
 
-/* ====== send signal helper ====== */
-function sendSig(target, data){
-  push(ref(db, `signals/${roomName}/${target}`), data).catch(e=>console.warn('sendSig failed',e));
-}
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-/* ====== UI render peers ====== */
-function renderPeers(list){
-  peersEl.innerHTML = '';
-  if(!list.length){
-    peersEl.innerHTML = '<div class="peer">لا أحد متصل حالياً</div>';
-    return;
-  }
-  list.forEach(id=>{
-    const div = document.createElement('div');
-    div.className = 'peer';
-    div.textContent = '🎙️ مستخدم ' + id;
-    peersEl.appendChild(div);
-  });
-}
+    // عناصر الواجهة
+    const roomsListEl = document.getElementById('roomsList');
+    const totalRoomsEl = document.getElementById('totalRooms');
+    const createRoomBtn = document.getElementById('createRoomBtn');
+    const newRoomNameInput = document.getElementById('newRoomName');
+    const refreshBtn = document.getElementById('refreshBtn');
 
-/* ====== كتم المايك ====== */
-function toggleMic(){
-  micEnabled = !micEnabled;
-  localStream?.getAudioTracks().forEach(t=>t.enabled = micEnabled);
-  muteBtn.textContent = micEnabled ? '🔇 كتم المايك' : '🎙️ تشغيل المايك';
-}
+    const roomView = document.getElementById('roomView');
+    const roomsMain = document.querySelector('main');
+    const roomNameDisplay = document.getElementById('roomNameDisplay');
+    const roomCountDisplay = document.getElementById('roomCountDisplay');
+    const jitsiContainer = document.getElementById('jitsiContainer');
+    const muteBtn = document.getElementById('muteBtn');
+    const leaveBtn = document.getElementById('leaveBtn');
 
-/* ====== تفعيل تشغيل الصوت (زر المستخدم) ====== */
-async function enableAudioPlayback(){
-  // حاول resume AudioContext و play لكل عنصر صوت إن وجد
-  await resumeAudioContext();
-  Object.values(audios).forEach(a=>{
-    try{ a.muted = false; a.play().catch(()=>{}); }catch{}
-  });
-  overlay.style.display = 'none';
-  setStatus('🔊 تم تفعيل الصوت — الآن يجب سماع الطرف الآخر إذا الاتصال ناجح');
-}
+    // client id فريد لكل تبويب
+    const clientId = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
 
-/* ====== إغلاق/تنظيف peer معين ====== */
-function closePeer(id){
-  try{
-    if(pcs[id]){
-      pcs[id].close();
-      delete pcs[id];
+    // حالة
+    let rooms = {}; // cache
+    let usersListeners = {}; // listeners per room for users count
+    let currentRoomId = null;
+    let jitsiApi = null;
+
+    // helper: sanitize room name for Jitsi (no spaces/special)
+    function jitsiRoomNameFromKey(key, name){
+      // combine key + name to avoid collisions
+      return `SchoolVoice_${key}_${(name||'room').replace(/[^a-zA-Z0-9_-]/g,'_')}`;
     }
-    if(audios[id]){
-      audios[id].srcObject = null;
-      audios[id].remove();
-      delete audios[id];
+
+    // render room entry
+    function renderRoomItem(key, data){
+      // create element
+      const el = document.createElement('div');
+      el.className = 'room-item';
+      el.id = 'room-'+key;
+      el.innerHTML = `
+        <div>
+          <div class="room-title">${escapeHtml(data.name || 'روم')}</div>
+          <div class="room-sub">${data.createdAt ? new Date(data.createdAt).toLocaleString() : ''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div class="badge"><span id="count-${key}">0</span> 👥</div>
+          <div><small class="small">اضغط للانضمام</small></div>
+        </div>
+      `;
+      el.addEventListener('click', ()=> joinRoom(key, data.name));
+      return el;
     }
-    if(offerTimers[id]){ clearInterval(offerTimers[id]); offerTimers[id]=null; }
-    candidateQueues[id] = [];
-  }catch(e){ console.warn('closePeer error',e); }
-}
 
-/* ====== مغادرة الغرفة (تنظيف كامل) ====== */
-async function leaveRoom(){
-  // اغلق كل الـ PCs
-  Object.keys(pcs).forEach(id=>closePeer(id));
-  // ازل سجلك من Firebase
-  try{
-    await remove(ref(db, `rooms/${roomName}/peers/${peerId}`));
-  }catch(e){}
-  // اغلق مسارات المايك
-  localStream?.getTracks().forEach(t=>t.stop());
-  localStream = null;
-  // استرجع واجهة المستخدم
-  joinBtn.disabled = false;
-  roomInput.disabled = false;
-  muteBtn.style.display = 'none';
-  leaveBtn.style.display = 'none';
-  setStatus('غير متصل');
-  overlay.style.display = 'none';
-  peersEl.innerHTML = '<div class="peer">لا أحد متصل حالياً</div>';
-}
+    // escape html (simple)
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ====== تنظيف عند إغلاق التبويب ====== */
-window.addEventListener('beforeunload', async ()=>{
-  try{ await remove(ref(db, `rooms/${roomName}/peers/${peerId}`)); }catch{}
-});
+    // listen to /rooms (child_added, child_removed, child_changed)
+    const roomsRef = ref(db, 'rooms');
+    onChildAdded(roomsRef, snap => {
+      const key = snap.key;
+      const data = snap.val();
+      rooms[key] = data;
+      // render item
+      const item = renderRoomItem(key, data);
+      roomsListEl.prepend(item);
+      updateTotalRooms();
+      // attach listener for users count
+      attachUsersListener(key);
+    });
 
-/* ====== مفيدة للتتبع في console (اختياري) ====== */
-console.log('peerId', peerId);
+    onChildRemoved(roomsRef, snap => {
+      const key = snap.key;
+      delete rooms[key];
+      const el = document.getElementById('room-'+key);
+      if(el) el.remove();
+      detachUsersListener(key);
+      updateTotalRooms();
+    });
 
-</script>
+    onChildRemoved(roomsRef, snap => {
+      // handled above
+    });
+
+    // update total count
+    function updateTotalRooms(){
+      const c = Object.keys(rooms).length;
+      totalRoomsEl.textContent = `${c} روم`;
+    }
+
+    // attach listener on /rooms/{key}/users to update count and auto-delete empty room
+    function attachUsersListener(roomKey){
+      if(usersListeners[roomKey]) return;
+      const usersRef = ref(db, `rooms/${roomKey}/users`);
+      const listener = onValue(usersRef, snap => {
+        const countEl = document.getElementById('count-'+roomKey);
+        const count = snap.exists() ? snap.size || Object.keys(snap.val()).length : 0;
+        if(countEl) countEl.textContent = count;
+        // if no users -> remove the room node entirely
+        if(!snap.exists()){
+          // remove room if still exists
+          remove(ref(db, `rooms/${roomKey}`)).catch(()=>{});
+        }
+        // if current room, update room view
+        if(currentRoomId === roomKey){
+          roomCountDisplay.textContent = `${count} ${count === 1 ? 'مشارك' : 'مشتركين'}`;
+        }
+      });
+      usersListeners[roomKey] = { usersRef, listener };
+    }
+
+    function detachUsersListener(roomKey){
+      const entry = usersListeners[roomKey];
+      if(!entry) return;
+      // Realtime SDK v12 uses onValue which returns an unsubscribe function; but we didn't store it.
+      // Simpler: set to null and let GC; listeners removed when node removed.
+      delete usersListeners[roomKey];
+    }
+
+    // create & join
+    createRoomBtn.addEventListener('click', async () => {
+      const name = (newRoomNameInput.value || '').trim();
+      if(!name){ alert('اكتب اسم الروم'); return; }
+      // push new room
+      const newRoomRef = push(ref(db, 'rooms'));
+      await set(newRoomRef, { name, createdAt: Date.now() });
+      const key = newRoomRef.key;
+      newRoomNameInput.value = '';
+      // join immediately
+      joinRoom(key, name);
+    });
+
+    refreshBtn.addEventListener('click', ()=> {
+      // quick UI refresh: clear and re-query (listeners keep working)
+      roomsListEl.innerHTML = '';
+      // re-render from local cache
+      Object.keys(rooms).forEach(k=>{
+        const el = renderRoomItem(k, rooms[k]);
+        roomsListEl.prepend(el);
+      });
+    });
+
+    // join room: write presence under rooms/{roomId}/users/{clientId}
+    async function joinRoom(roomId, roomName){
+      // ensure room exists (race guard)
+      const roomSnap = await get(child(ref(db), `rooms/${roomId}`));
+      if(!roomSnap.exists()){
+        alert('الروم غير متوفر حالياً.');
+        return;
+      }
+
+      currentRoomId = roomId;
+      // write presence
+      const userRef = ref(db, `rooms/${roomId}/users/${clientId}`);
+      await set(userRef, { joinedAt: Date.now() });
+      // ensure removal onDisconnect
+      try{
+        onDisconnect(userRef).remove();
+      }catch(e){
+        console.warn('onDisconnect may not be available in this environment:', e);
+      }
+
+      // show room view
+      enterRoomUI(roomId, roomName);
+    }
+
+    // enter room UI and init Jitsi
+    function enterRoomUI(roomId, roomName){
+      // hide main area and show roomView
+      document.querySelector('main').style.display = 'none';
+      roomView.style.display = 'block';
+      roomNameDisplay.textContent = roomName || 'روم صوتي';
+      roomCountDisplay.textContent = 'جارٍ الاتصال...';
+
+      // init Jitsi
+      initJitsi(roomId, roomName);
+
+      // attach listener for users count (if not attached)
+      attachUsersListener(roomId);
+    }
+
+    // initialize Jitsi External API
+    function initJitsi(roomId, roomName){
+      // clear container
+      jitsiContainer.innerHTML = '';
+      // build room name safe
+      const jitsiRoom = jitsiRoomNameFromKey(roomId, roomName);
+
+      // load external_api.js (non-module)
+      // external_api.js must be loaded via a regular script tag; ensure it's loaded once
+      if(typeof JitsiMeetExternalAPI === 'undefined'){
+        const s = document.createElement('script');
+        s.src = 'https://meet.jit.si/external_api.js';
+        s.onload = ()=> startJitsi(jitsiRoom);
+        s.onerror = ()=> alert('فشل تحميل Jitsi API — تأكد من اتصال الإنترنت');
+        document.body.appendChild(s);
+      } else {
+        startJitsi(jitsiRoom);
+      }
+    }
+
+    function startJitsi(jitsiRoom){
+      // small options to keep interface minimal
+      const domain = 'meet.jit.si';
+      const options = {
+        roomName: jitsiRoom,
+        parentNode: jitsiContainer,
+        width: '100%',
+        height: '100%',
+        configOverwrite: {
+          startWithAudioMuted: false,
+          startWithVideoMuted: true,
+          disableDeepLinking: true
+        },
+        interfaceConfigOverwrite: {
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+          TOOLBAR_BUTTONS: ['microphone','hangup','tileview']
+        }
+      };
+      // dispose existing
+      if(jitsiApi && typeof jitsiApi.dispose === 'function'){
+        try{ jitsiApi.dispose(); }catch(e){}
+        jitsiApi = null;
+      }
+
+      jitsiApi = new JitsiMeetExternalAPI(domain, options);
+
+      // sync mute button
+      muteBtn.onclick = ()=> {
+        try{ jitsiApi.executeCommand('toggleAudio'); }catch(e){ console.warn(e) }
+      };
+
+      // when Jitsi reports ready or participants update, we could act on it
+      jitsiApi.addEventListener('videoConferenceJoined', () => {
+        console.log('Jitsi: joined');
+      });
+
+      jitsiApi.addEventListener('participantLeft', () => {
+        console.log('participantLeft');
+      });
+
+      // hangup button also triggers leave logic
+      leaveBtn.onclick = () => leaveRoom();
+      // if user closes Jitsi by its hangup toolbar, detect via API event
+      try{
+        jitsiApi.addEventListener('audioMuteStatusChanged', (e)=>{ /* optional sync */ });
+        jitsiApi.addEventListener('readyToClose', ()=> {
+          // user pressed hangup inside Jitsi UI
+          leaveRoom();
+        });
+      }catch(e){/* ignore */ }
+    }
+
+    // leave room: remove presence and return home
+    async function leaveRoom(){
+      if(!currentRoomId) return;
+      // remove presence explicitly (onDisconnect already registered but remove now)
+      const userRef = ref(db, `rooms/${currentRoomId}/users/${clientId}`);
+      try{ await remove(userRef); }catch(e){ console.warn(e) }
+
+      // dispose Jitsi
+      try{ if(jitsiApi && typeof jitsiApi.dispose === 'function') jitsiApi.dispose(); }catch(e){}
+      jitsiApi = null;
+      jitsiContainer.innerHTML = '';
+
+      // reset UI
+      roomView.style.display = 'none';
+      document.querySelector('main').style.display = '';
+      currentRoomId = null;
+    }
+
+    // cleanup on tab close
+    window.addEventListener('beforeunload', async (e) => {
+      // try to remove presence; rely on onDisconnect as fallback
+      if(currentRoomId){
+        try{ await remove(ref(db, `rooms/${currentRoomId}/users/${clientId}`)); }catch(_){} 
+      }
+    });
+
+    // initial load: read existing rooms once (listeners above handle reactivity)
+    onValue(ref(db, 'rooms'), snap => {
+      // ensure local cache updated for counts; this will also trigger child_added for new nodes
+      // This handler ensures we have current rooms list (for first render)
+      // But we rely mostly on onChildAdded/onChildRemoved set earlier.
+      // Update local cache for any rooms not yet present
+      if(!snap.exists()) {
+        roomsListEl.innerHTML = `<div class="small" style="padding:12px">لا توجد رومات حالياً</div>`;
+        rooms = {};
+        totalRoomsEl.textContent = '0 روم';
+        return;
+      }
+      // Clear the UI and rebuild (keeps it simple)
+      roomsListEl.innerHTML = '';
+      rooms = {};
+      snap.forEach(child => {
+        rooms[child.key] = child.val();
+      });
+      Object.keys(rooms).forEach(k=>{
+        const el = renderRoomItem(k, rooms[k]);
+        roomsListEl.prepend(el);
+        attachUsersListener(k);
+      });
+      updateTotalRooms();
+    });
+
+    // utility: show quick alert for errors
+    function showError(msg){
+      alert(msg);
+    }
+
+    // helper: count users for a room (used rarely)
+    async function countUsers(roomId){
+      const snap = await get(ref(db, `rooms/${roomId}/users`));
+      return snap.exists() ? (snap.size || Object.keys(snap.val()).length) : 0;
+    }
+
+    // END module
+  </script>
 </body>
 </html>
