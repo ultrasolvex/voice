@@ -1,168 +1,208 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>🎧 School Voice — Simple Live Rooms</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>صوتنا – دردشة صوتية فاخرة</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#020b1f; /* كحلي داكن */
-      --panel:#041631;
-      --accent:#20d8ff; /* أكوا */
-      --muted:#9fbfd6;
-      --glass: rgba(255,255,255,0.03);
+    :root {
+      --bg: #0b1426;
+      --card: #131d35;
+      --accent: #00e0ff;
+      --accent-dark: #00a8cc;
+      --text: #e0f7ff;
+      --muted: #88c0d0;
+      --danger: #e74c3c;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:'Tajawal',sans-serif;
-      background:linear-gradient(180deg,var(--bg),#001029);
-      color:#e8f6ff;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(135deg, var(--bg), #1a2a44);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
     }
-    header{
-      width:100%;
-      max-width:1100px;
-      padding:14px 18px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      color:var(--accent);
-      font-weight:700;
-      border-bottom:1px solid rgba(255,255,255,0.02);
+
+    h2 {
+      margin: 20px 0 10px;
+      font-size: 26px;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(0, 224, 255, 0.3);
     }
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#3bb0ff);display:grid;place-items:center;color:#02233a;font-weight:800}
-    main{width:100%;max-width:1100px;padding:18px;display:grid;grid-template-columns:1fr 360px;gap:18px}
-    .panel{background:var(--panel);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.6)}
-    /* left: list */
-    .rooms-header{display:flex;justify-content:space-between;align-items:center;gap:8px}
-    .rooms-list{margin-top:12px;display:flex;flex-direction:column;gap:10px}
-    .room-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:var(--glass);cursor:pointer;transition:transform .12s,background .12s}
-    .room-item:hover{transform:translateY(-4px);background:rgba(255,255,255,0.04)}
-    .room-title{font-weight:700}
-    .room-meta{color:var(--muted);font-size:13px}
-    .badge{background:rgba(0,0,0,0.25);padding:6px 10px;border-radius:999px;color:var(--accent);font-weight:700}
-    /* right: actions */
-    .controls{display:flex;flex-direction:column;gap:12px}
-    input[type="text"]{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit}
-    .btn{background:linear-gradient(90deg,#0f5f75,var(--accent));border:none;color:#001b26;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
-    .small{color:var(--muted);font-size:13px}
-    footer{width:100%;max-width:1100px;padding:12px;text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
-    /* room view */
-    #roomView{display:none}
-    .room-stage{display:flex;flex-direction:column;align-items:center;gap:16px}
-    .host-circle{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#4bd6ff);display:grid;place-items:center;color:#012233;font-weight:800;font-size:18px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
-    .peers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-    .peer{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.03);display:grid;place-items:center;font-weight:700;color:var(--muted)}
-    .request-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-    .req-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)}
-    .req-actions{display:flex;gap:8px}
-    /* responsive */
-    @media(max-width:920px){main{grid-template-columns:1fr;}.right{order:2}}
+
+    #roomList {
+      background: rgba(19, 29, 53, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 224, 255, 0.2);
+      border-radius: 18px;
+      padding: 16px;
+      width: 100%;
+      max-width: 420px;
+      height: 380px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .room {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 14px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .room:hover {
+      background: rgba(0, 224, 255, 0.15);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 224, 255, 0.2);
+    }
+
+    .room b { font-weight: 700; font-size: 16px; }
+    .room span { 
+      background: rgba(0, 0, 0, 0.3); 
+      padding: 4px 10px; 
+      border-radius: 20px; 
+      font-size: 13px; 
+      color: var(--accent);
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 15px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    input {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 224, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      width: 200px;
+      font-size: 15px;
+    }
+
+    input::placeholder { color: #88c0d0; }
+
+    button {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 224, 255, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 224, 255, 0.4);
+    }
+
+    button.danger {
+      background: var(--danger);
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+
+    #chatArea {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 420px;
+      display: none;
+    }
+
+    #participants {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .participant {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: var(--card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      position: relative;
+      border: 2px solid transparent;
+      transition: 0.3s;
+    }
+
+    .participant.speaking {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(0, 224, 255, 0.6);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    .mic {
+      position: absolute;
+      bottom: 6px;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    audio { display: none; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <div class="logo">SV</div>
-      <div>
-        <div style="font-size:18px">🎧 School Voice</div>
-        <div class="small">ادخل، اشترك، اطلب التحدث — بدون تسجيل</div>
-      </div>
-    </div>
-    <div id="userInfo" style="text-align:right">
-      <!-- username display -->
-    </div>
-  </header>
 
-  <main>
-    <!-- LEFT: rooms list -->
-    <div class="panel">
-      <div class="rooms-header">
-        <div>
-          <div style="font-weight:800">الرومات المفتوحة</div>
-          <div class="small">انضم إلى أي روم أو أنشئ واحدًا جديدًا</div>
-        </div>
-        <div id="roomsCount" class="small">0</div>
-      </div>
+  <h2>صوتنا – دردشة صوتية فاخرة</h2>
 
-      <div class="rooms-list" id="roomsList">
-        <!-- active rooms injected here -->
-      </div>
-    </div>
+  <div id="roomList"></div>
 
-    <!-- RIGHT: create & info -->
-    <aside class="controls">
-      <div class="panel">
-        <div style="font-weight:800">أنشئ روم أو أدخل باسم مستعار</div>
-        <div style="margin-top:8px" class="small">اسمك سيُستخدم مؤقتًا أثناء الجلسة</div>
-        <input id="nameInput" type="text" placeholder="اسمك (مثلاً: محمد)">
-        <input id="newRoomInput" type="text" placeholder="اسم الروم الجديد">
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="createBtn" class="btn">➕ إنشاء والدخول</button>
-          <button id="refreshBtn" class="btn ghost">🔄 تحديث</button>
-        </div>
-      </div>
+  <div class="footer">
+    <input id="roomNameInput" placeholder="اسم الغرفة الجديدة" />
+    <button id="createRoomBtn">إنشاء غرفة</button>
+  </div>
 
-      <div class="panel">
-        <div style="font-weight:800">ملاحظات سريعة</div>
-        <div class="small" style="margin-top:8px;line-height:1.5">
-          • بدون تسجيل — اختر اسمًا مؤقتًا. <br/>
-          • المضيف يتحكم بالطلبات — يقبل أو يرفض من يطلب التحدث. <br/>
-          • عند إغلاق الصفحة تُحذف حضورك، وإذا غابت كل الحضور تُحذف الروم.
-        </div>
-      </div>
-    </aside>
+  <div id="chatArea">
+    <h3 id="roomTitle" style="color:var(--accent);margin-bottom:10px"></h3>
+    <div id="participants"></div>
+    <button id="leaveBtn" class="danger">خروج</button>
+  </div>
 
-    <!-- ROOM VIEW (hidden) -->
-    <div id="roomView" class="panel" style="grid-column:1/-1">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div id="roomNameDisplay" style="font-weight:800;font-size:16px"></div>
-          <div id="participantsCount" class="small" style="margin-top:6px"></div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button id="requestBtn" class="btn">🎙️ اطلب التحدث</button>
-          <button id="leaveBtn" class="btn ghost">🚪 خروج</button>
-        </div>
-      </div>
-
-      <div class="room-stage" style="margin-top:14px">
-        <div class="host-circle" id="hostCircle">المضيف</div>
-        <div class="peers" id="peersWrap"></div>
-
-        <div id="hostControls" style="width:100%;max-width:760px;display:none">
-          <div style="font-weight:800;margin-top:6px">طلبات التحدث</div>
-          <div class="request-list" id="requestsList">
-            <!-- requests for host -->
-          </div>
-        </div>
-      </div>
-
-      <div id="jitsi-container" style="margin-top:18px;height:420px;border-radius:10px;overflow:hidden;background:#000"></div>
-    </div>
-  </main>
-
-  <footer>© 2025 School Voice — بسيط وآمن للمدارس</footer>
-
-  <!-- Jitsi -->
-  <script src="https://meet.jit.si/external_api.js"></script>
-
-  <!-- Firebase (modules) -->
+  <!-- Firebase + WebRTC -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import {
-      getDatabase, ref, push, set, get, onValue, remove, onDisconnect, child, update
-    } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getDatabase, ref, set, push, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-    // ---------------------- ضع هنا إعداد Firebase الخاص بك ----------------------
+    // Firebase Config (اللي أنت جبته)
     const firebaseConfig = {
       apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
       authDomain: "school-voice-1b1dc.firebaseapp.com",
@@ -173,372 +213,171 @@
       appId: "1:990135804919:web:38c050a3a2ed1cb8d304f2",
       measurementId: "G-Y8Z1NP232P"
     };
-    // ---------------------------------------------------------------------------
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // state + client id
-    const clientId = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-    let displayName = sessionStorage.getItem('sv_name') || '';
-    let currentRoomId = null;
-    let isHost = false;
-    let jitsiApi = null;
-    let grantedSpeaker = false;
+    const clientId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    let myName = prompt("ادخل اسمك:") || "ضيف";
+    let currentRoom = null;
+    let localStream = null;
+    const peers = {};
+    const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    // elements
-    const roomsListEl = document.getElementById('roomsList');
-    const roomsCountEl = document.getElementById('roomsCount');
-    const nameInput = document.getElementById('nameInput');
-    const newRoomInput = document.getElementById('newRoomInput');
-    const createBtn = document.getElementById('createBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const roomView = document.getElementById('roomView');
-    const homePanels = document.querySelectorAll('.panel')[0]; // not used
-    const roomNameDisplay = document.getElementById('roomNameDisplay');
-    const participantsCountEl = document.getElementById('participantsCount');
-    const hostCircle = document.getElementById('hostCircle');
-    const peersWrap = document.getElementById('peersWrap');
-    const requestsList = document.getElementById('requestsList');
-    const hostControls = document.getElementById('hostControls');
-    const requestBtn = document.getElementById('requestBtn');
-    const leaveBtn = document.getElementById('leaveBtn');
-    const userInfo = document.getElementById('userInfo');
-    const jitsiContainer = document.getElementById('jitsi-container');
+    const roomList = document.getElementById("roomList");
+    const chatArea = document.getElementById("chatArea");
+    const roomTitle = document.getElementById("roomTitle");
+    const participants = document.getElementById("participants");
+    const leaveBtn = document.getElementById("leaveBtn");
 
-    // show stored name
-    nameInput.value = displayName;
-    if(displayName) userInfo.innerHTML = `<div class="small">أنت: <strong style="color:var(--accent)">${escapeHtml(displayName)}</strong></div>`;
+    // تحديث قائمة الرومات
+    onValue(ref(db, 'rooms'), (snap) => {
+      const rooms = snap.val() || {};
+      roomList.innerHTML = '';
+      const active = Object.entries(rooms).filter(([_, data]) => data.users && Object.keys(data.users).length > 0);
 
-    // helper
-    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-    // --- Rooms listing: show only rooms that have users child (active) ---
-    const roomsRef = ref(db, 'rooms');
-    onValue(roomsRef, snap => {
-      roomsListEl.innerHTML = '';
-      const rooms = [];
-      snap.forEach(childSnap => {
-        const key = childSnap.key;
-        const val = childSnap.val();
-        rooms.push({ key, val });
-      });
-      // We will check for users count per room (only show active)
-      // For performance: create elements then attach counts
-      let activeCount = 0;
-      rooms.reverse().forEach(r => {
-        const usersRef = ref(db, `rooms/${r.key}/users`);
-        get(usersRef).then(uSnap => {
-          const usersCount = uSnap.exists() ? (uSnap.size || Object.keys(uSnap.val()).length) : 0;
-          if(usersCount > 0){
-            activeCount++;
-            const item = document.createElement('div');
-            item.className = 'room-item';
-            item.innerHTML = `
-              <div>
-                <div class="room-title">${escapeHtml(r.val.name || r.key)}</div>
-                <div class="room-meta">${r.val.createdAt ? new Date(r.val.createdAt).toLocaleString() : ''}</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px">
-                <div class="badge">${usersCount} 👥</div>
-                <div class="small">ادخل</div>
-              </div>
-            `;
-            item.onclick = ()=> joinRoom(r.key, r.val.name || r.key);
-            roomsListEl.appendChild(item);
-          }
-          roomsCountEl.textContent = `${activeCount} غرفة نشطة`;
-        }).catch(()=>{ /* ignore */ });
-      });
-      if(rooms.length === 0){
-        roomsListEl.innerHTML = `<div class="small" style="padding:12px">لا توجد غرف مفتوحة</div>`;
-        roomsCountEl.textContent = '0';
-      }
-    });
-
-    // --- Create room and join as host ---
-    createBtn.addEventListener('click', async ()=>{
-      displayName = (nameInput.value || '').trim() || ('ضيف-'+clientId.slice(-4));
-      sessionStorage.setItem('sv_name', displayName);
-      userInfo.innerHTML = `<div class="small">أنت: <strong style="color:var(--accent)">${escapeHtml(displayName)}</strong></div>`;
-
-      const roomName = (newRoomInput.value || '').trim();
-      if(!roomName){ alert('اكتب اسم الروم'); return; }
-
-      // push new room
-      const newRoomRef = push(ref(db, 'rooms'));
-      const key = newRoomRef.key;
-      await set(newRoomRef, { name: roomName, hostId: clientId, createdAt: Date.now() });
-
-      // join as host
-      await joinRoom(key, roomName, { asHost:true });
-      newRoomInput.value = '';
-    });
-
-    refreshBtn.addEventListener('click', ()=> {
-      // simply trigger onValue by toggling nothing
-      // it auto-updates; we can also force a fresh get but onValue already active
-    });
-
-    // --- join room ---
-    async function joinRoom(roomKey, roomName, opts={asHost:false}) {
-      displayName = (nameInput.value || '').trim() || ('ضيف-'+clientId.slice(-4));
-      sessionStorage.setItem('sv_name', displayName);
-      userInfo.innerHTML = `<div class="small">أنت: <strong style="color:var(--accent)">${escapeHtml(displayName)}</strong></div>`;
-
-      // ensure room exists; if not, quick alert
-      const roomRef = ref(db, `rooms/${roomKey}`);
-      const snap = await get(roomRef);
-      if(!snap.exists()){
-        alert('الروم غير متاح حالياً');
-        return;
-      }
-
-      currentRoomId = roomKey;
-      // write presence under rooms/{roomKey}/users/{clientId}
-      const userRef = ref(db, `rooms/${roomKey}/users/${clientId}`);
-      await set(userRef, { name: displayName, joinedAt: Date.now() });
-      try{ onDisconnect(userRef).remove(); }catch(e){ console.warn('onDisconnect not available', e); }
-
-      // if creator requested asHost, update hostId
-      if(opts.asHost){
-        await update(roomRef, { hostId: clientId });
-      }
-
-      // show room UI
-      enterRoomUI(roomKey, roomName);
-      // attach listeners
-      attachRoomListeners(roomKey);
-    }
-
-    // --- Room UI and Jitsi init ---
-    function enterRoomUI(roomKey, roomName){
-      document.querySelector('main').scrollIntoView({behavior:'smooth'});
-      roomNameDisplay.textContent = roomName || 'روم صوتي';
-      document.getElementById('roomNameDisplay').textContent = roomName || 'روم صوتي';
-      roomView.style.display = 'block';
-      // hide left/right panels visually (simple)
-      document.querySelectorAll('main > .panel, main > aside').forEach(n=>{
-        n.style.display = 'none';
-      });
-
-      // set host/peers UI placeholders until listeners update
-      hostCircle.textContent = 'جارٍ التحميل...';
-      peersWrap.innerHTML = '';
-      requestsList.innerHTML = '';
-      hostControls.style.display = 'none';
-      grantedSpeaker = false;
-      // init Jitsi (host gets unmuted later depending on role)
-      initJitsi(roomKey);
-    }
-
-    // --- attach listeners for users, host, requests, speakers ---
-    let usersUnsub = null;
-    let requestsUnsub = null;
-    let hostUnsub = null;
-    function attachRoomListeners(roomKey){
-      // users list
-      const usersRef = ref(db, `rooms/${roomKey}/users`);
-      usersUnsub = onValue(usersRef, snap=>{
-        const users = snap.exists() ? snap.val() : {};
-        // update participants UI
-        const ids = Object.keys(users || {});
-        participantsCountEl.textContent = `${ids.length} ${ids.length === 1 ? 'مشارك' : 'مشتركين'}`;
-        // render host + peers
-        const hostIdRef = ref(db, `rooms/${roomKey}/hostId`);
-        get(hostIdRef).then(hsnap=>{
-          const hostId = hsnap.exists() ? hsnap.val() : ids[0] || null;
-          isHost = (hostId === clientId);
-          // display host
-          const hostName = (users && users[hostId] && users[hostId].name) ? users[hostId].name : 'المضيف';
-          hostCircle.textContent = hostName;
-          // peers
-          peersWrap.innerHTML = '';
-          ids.filter(id => id !== hostId).forEach(id=>{
-            const p = document.createElement('div');
-            p.className = 'peer';
-            p.textContent = (users[id] && users[id].name) ? users[id].name.split(' ')[0] : 'ضيف';
-            peersWrap.appendChild(p);
-          });
-          // host controls visible only to host
-          hostControls.style.display = isHost ? 'block' : 'none';
-          // if host, unmute self when jitsi ready
-          if(isHost && jitsiApi){
-            try{ jitsiApi.executeCommand('toggleAudio'); /* ensure unmuted */ }catch(e){}
-          }
+      if (active.length === 0) {
+        roomList.innerHTML = '<div class="empty">لا توجد غرف مفتوحة الآن</div>';
+      } else {
+        active.slice(0, 7).forEach(([roomId, data]) => {
+          const div = document.createElement('div');
+          div.className = 'room';
+          div.innerHTML = `<b>${data.name}</b><span>${Object.keys(data.users).length} متصل</span>`;
+          div.onclick = () => joinRoom(roomId, data.name);
+          roomList.appendChild(div);
         });
-        // if zero users -> cleanup room node
-        if(ids.length === 0){
-          // remove room entry (cleanup)
-          remove(ref(db, `rooms/${roomKey}`)).catch(()=>{});
-          // leave UI
-          leaveRoomUI();
-        }
-      });
+      }
+    });
 
-      // requests listener for host (rooms/{roomKey}/requests)
-      const reqRef = ref(db, `rooms/${roomKey}/requests`);
-      requestsUnsub = onValue(reqRef, snap=>{
-        requestsList.innerHTML = '';
-        if(!snap.exists()) return;
-        snap.forEach(child=>{
-          const rid = child.key;
-          const data = child.val();
-          // show request only for host
+    // إنشاء غرفة
+    document.getElementById("createRoomBtn").onclick = () => {
+      const name = document.getElementById("roomNameInput").value.trim();
+      if (!name) return alert("اكتب اسم الغرفة");
+      const roomRef = push(ref(db, 'rooms'));
+      set(roomRef, { name, host: clientId, created: Date.now(), users: {} });
+      joinRoom(roomRef.key, name);
+    };
+
+    // الانضمام
+    async function joinRoom(roomId, roomName) {
+      currentRoom = roomId;
+      roomTitle.textContent = `أنت في: ${roomName}`;
+      chatArea.style.display = 'block';
+      document.querySelector('.footer').style.display = 'none';
+      roomList.style.display = 'none';
+
+      const userRef = ref(db, `rooms/${roomId}/users/${clientId}`);
+      await set(userRef, { name: myName, joined: Date.now() });
+      onDisconnect(userRef).remove();
+
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      document.body.appendChild(Object.assign(document.createElement('audio'), { srcObject: localStream, muted: true, autoplay: true }));
+
+      onValue(ref(db, `rooms/${roomId}/users`), (snap) => {
+        const users = snap.val() || {};
+        participants.innerHTML = '';
+        Object.entries(users).forEach(([id, user]) => {
+          if (id !== clientId) createPeerConnection(id, true);
           const el = document.createElement('div');
-          el.className = 'req-item';
-          el.innerHTML = `<div>${escapeHtml(data.name || 'ضيف')}</div>`;
-          const actions = document.createElement('div');
-          actions.className = 'req-actions';
-          const accept = document.createElement('button'); accept.className = 'btn'; accept.textContent = 'قبول';
-          const reject = document.createElement('button'); reject.className = 'btn ghost'; reject.textContent = 'رفض';
-          accept.onclick = async ()=>{
-            // grant speaker
-            await set(ref(db, `rooms/${roomKey}/speakers/${rid}`), { grantedAt: Date.now(), by: clientId });
-            // remove request
-            await remove(ref(db, `rooms/${roomKey}/requests/${rid}`));
-          };
-          reject.onclick = async ()=>{
-            await remove(ref(db, `rooms/${roomKey}/requests/${rid}`));
-          };
-          actions.appendChild(accept); actions.appendChild(reject);
-          el.appendChild(actions);
-          requestsList.appendChild(el);
+          el.className = 'participant';
+          el.innerHTML = `<div>${user.name.split(' ')[0]}</div><div class="mic">ميكروفون</div>`;
+          el.id = `peer-${id}`;
+          participants.appendChild(el);
         });
       });
 
-      // speakers listener to detect when this client granted
-      const speakerRefForMe = ref(db, `rooms/${roomKey}/speakers/${clientId}`);
-      onValue(speakerRefForMe, snap=>{
-        if(snap.exists()){
-          // granted to speak -> unmute locally
-          grantedSpeaker = true;
-          if(jitsiApi){
-            try{ jitsiApi.executeCommand('toggleAudio'); }catch(e){}
+      onValue(ref(db, `signals/${roomId}`), (snap) => {
+        const signals = snap.val() || {};
+        Object.entries(signals).forEach(([fromId, signal]) => {
+          if (fromId !== clientId && signal.to === clientId) {
+            handleSignal(fromId, signal);
+            remove(ref(db, `signals/${roomId}/${fromId}`));
           }
-          // remove the grant after a short time if you want one-time; here we keep it until host removes
-        }
-      });
-
-      // when host removes speaker grant, handle (optional)
-      const myGrantRef = ref(db, `rooms/${roomKey}/speakers/${clientId}`);
-      onValue(myGrantRef, snap=>{
-        if(!snap.exists()){
-          // host revoked; optionally mute client
-          if(grantedSpeaker && jitsiApi){
-            try{ jitsiApi.executeCommand('toggleAudio'); }catch(e){}
-            grantedSpeaker = false;
-          }
-        }
-      });
-
-      // hostId changes (for UI)
-      const hostIdRef = ref(db, `rooms/${roomKey}/hostId`);
-      hostUnsub = onValue(hostIdRef, snap=>{
-        // handled in users listener as well
+        });
       });
     }
 
-    // --- Request speak (for guests) ---
-    requestBtn.addEventListener('click', async ()=>{
-      if(!currentRoomId) return;
-      // write request under rooms/{room}/requests/{clientId}
-      await set(ref(db, `rooms/${currentRoomId}/requests/${clientId}`), { name: displayName || ('ضيف-'+clientId.slice(-4)), at: Date.now() });
-      requestBtn.textContent = '✔️ تم الطلب';
-      requestBtn.disabled = true;
-      setTimeout(()=>{ requestBtn.textContent = '🎙️ اطلب التحدث'; requestBtn.disabled = false; }, 5000);
-    });
+    function createPeerConnection(peerId, isInitiator) {
+      if (peers[peerId]) return;
+      const pc = new RTCPeerConnection(iceServers);
+      peers[peerId] = pc;
 
-    // --- init Jitsi ---
-    function initJitsi(roomKey){
-      jitsiContainer.innerHTML = '';
-      const jitsiRoomName = `SchoolVoice_${roomKey}`;
-      const domain = 'meet.jit.si';
-      const options = {
-        roomName: jitsiRoomName,
-        parentNode: jitsiContainer,
-        configOverwrite: {
-          startWithAudioMuted: true, // default muted; host will be unmuted
-          startWithVideoMuted: true,
-          disableDeepLinking: true
-        },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: ['microphone','hangup','chat','tileview']
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+      pc.ontrack = (e) => {
+        const audio = new Audio();
+        audio.srcObject = e.streams[0];
+        audio.autoplay = true;
+        document.body.appendChild(audio);
+
+        const el = document.getElementById(`peer-${peerId}`);
+        if (el) {
+          el.classList.add('speaking');
+          setTimeout(() => el.classList.remove('speaking'), 500);
         }
       };
-      // dispose previous
-      if(window.jitsiApiInstance && typeof window.jitsiApiInstance.dispose === 'function'){
-        try{ window.jitsiApiInstance.dispose(); }catch(e){ console.warn(e); }
-      }
-      // create
-      try{
-        window.jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
-        jitsiApi = window.jitsiApiInstance;
-      }catch(e){
-        console.error('Jitsi init error', e);
-        alert('فشل تحميل Jitsi — تأكد من اتصال الإنترنت');
-        return;
-      }
 
-      // if this client is host, unmute host automatically when joined
-      jitsiApi.addEventListener('videoConferenceJoined', () => {
-        // if host, ensure unmuted
-        if(isHost){
-          try{ jitsiApi.executeCommand('toggleAudio'); }catch(e){}
-        } else {
-          // guests: stay muted until granted
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          set(ref(db, `signals/${currentRoom}/${clientId}`), {
+            to: peerId,
+            candidate: e.candidate
+          });
         }
-      });
+      };
 
-      // if user hangs up inside jitsi, handle leaving
-      jitsiApi.addEventListener('readyToClose', () => {
-        leaveRoom();
-      });
-    }
-
-    // --- leave room & cleanup ---
-    async function leaveRoom(){
-      if(!currentRoomId) return;
-      // remove presence
-      await remove(ref(db, `rooms/${currentRoomId}/users/${clientId}`)).catch(()=>{});
-      // also remove any pending request by this client
-      await remove(ref(db, `rooms/${currentRoomId}/requests/${clientId}`)).catch(()=>{});
-      // remove speaker grant if any
-      await remove(ref(db, `rooms/${currentRoomId}/speakers/${clientId}`)).catch(()=>{});
-
-      // dispose jitsi
-      try{ if(window.jitsiApiInstance && typeof window.jitsiApiInstance.dispose === 'function') window.jitsiApiInstance.dispose(); }catch(e){}
-      jitsiApi = null;
-      currentRoomId = null;
-      isHost = false;
-      grantedSpeaker = false;
-
-      // detach listeners (simple: not storing unsubs in this version; Firebase cleans when refs removed)
-      // return UI
-      roomView.style.display = 'none';
-      document.querySelectorAll('main > .panel, main > aside').forEach(n=>{
-        n.style.display = '';
-      });
-    }
-    leaveBtn.addEventListener('click', ()=> leaveRoom());
-
-    // --- aut cleanup: if room has zero users remove node (listener in rooms listing handles but ensure) ---
-    // This happens via users listener when count goes to zero we remove room; handled by client that detects zero users.
-    // Some race conditions possible if all clients disconnect unexpectedly; consider Cloud Function for production.
-
-    // --- beforeunload: try to remove presence if in room ---
-    window.addEventListener('beforeunload', async ()=> {
-      if(currentRoomId){
-        try{ await remove(ref(db, `rooms/${currentRoomId}/users/${clientId}`)); }catch(e){}
+      if (isInitiator) {
+        pc.createOffer()
+          .then(offer => pc.setLocalDescription(offer))
+          .then(() => {
+            set(ref(db, `signals/${currentRoom}/${clientId}`), {
+              to: peerId,
+              sdp: pc.localDescription
+            });
+          });
       }
-    });
 
-    // --- helper escape ---
-    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === 'failed') delete peers[peerId];
+      };
+    }
 
-    // simple: allow clicking a displayed room to join by key name; for convenience, we show name+key mapping when creating
-    // initial: nothing else — onValue on roomsRef already mounted above
+    async function handleSignal(fromId, signal) {
+      let pc = peers[fromId];
+      if (!pc) {
+        pc = new RTCPeerConnection(iceServers);
+        peers[fromId] = pc;
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+      }
 
+      if (signal.sdp) {
+        await pc.setRemoteDescription(signal.sdp);
+        if (signal.sdp.type === 'offer') {
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          set(ref(db, `signals/${currentRoom}/${clientId}`), {
+            to: fromId,
+            sdp: pc.localDescription
+          });
+        }
+      } else if (signal.candidate) {
+        await pc.addIceCandidate(signal.candidate);
+      }
+    }
+
+    leaveBtn.onclick = async () => {
+      if (!currentRoom) return;
+      await remove(ref(db, `rooms/${currentRoom}/users/${clientId}`));
+      Object.values(peers).forEach(pc => pc.close());
+      Object.keys(peers).forEach(id => delete peers[id]);
+      localStream?.getTracks().forEach(t => t.stop());
+      chatArea.style.display = 'none';
+      document.querySelector('.footer').style.display = 'flex';
+      roomList.style.display = 'block';
+      currentRoom = null;
+    };
+
+    window.addEventListener('beforeunload', leaveBtn.onclick);
   </script>
 </body>
 </html>
