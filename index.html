@@ -3,200 +3,119 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>School Voice — رومات صوتية</title>
-
+  <title>🎧 School Voice — الرومات الصوتية</title>
   <style>
-    :root{
-      --bg:#010817; /* فخم جداً */
-      --panel:#071529;
-      --muted:#8eaed0;
-      --accent:#74a9ff;
-      --glass: rgba(255,255,255,0.02);
-    }
-    *{box-sizing:border-box}
-    body{
+    body {
       margin:0;
-      font-family: 'Tajawal', Tahoma, Arial, sans-serif;
-      background: linear-gradient(180deg, var(--bg), #000a12);
-      color: #eaf4ff;
+      font-family:'Tajawal',sans-serif;
+      background:linear-gradient(135deg,#010817,#082044);
+      color:#eaf1ff;
+      display:flex;
+      flex-direction:column;
       min-height:100vh;
+      text-align:center;
+    }
+    header {
+      background:#041025;
+      padding:14px;
+      font-weight:700;
+      font-size:20px;
+      color:#9fc7ff;
+    }
+    main {
+      flex:1;
       display:flex;
       flex-direction:column;
       align-items:center;
-    }
-
-    header{
-      width:100%;
-      max-width:980px;
-      padding:18px 16px;
-      text-align:center;
-      color:var(--accent);
-      font-weight:700;
-      font-size:18px;
-      border-bottom:1px solid rgba(255,255,255,0.02);
-      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
-    }
-
-    main{
-      width:100%;
-      max-width:980px;
       padding:20px;
-      display:flex;
-      gap:20px;
     }
-
-    /* home / list */
-    .left{
-      flex:1;
+    input {
+      padding:10px;
+      border-radius:8px;
+      border:none;
+      width:200px;
+      margin:5px;
+      background:#0b2a4d;
+      color:#fff;
+      text-align:center;
     }
-
-    .panel{
-      background:var(--panel);
-      border-radius:12px;
-      padding:14px;
-      border:1px solid rgba(255,255,255,0.03);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    button {
+      padding:10px 16px;
+      border:none;
+      border-radius:8px;
+      background:#195ab7;
+      color:#fff;
+      cursor:pointer;
+      font-weight:700;
+      margin:4px;
+      transition:0.3s;
     }
-
-    .rooms-list{display:flex;flex-direction:column;gap:10px; margin-top:8px}
-    .room-item{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+    button:hover { background:#2274ff; }
+    ul {
+      list-style:none;
+      padding:0;
+      margin:20px 0;
+      width:90%;
+      max-width:400px;
+    }
+    li {
+      background:rgba(255,255,255,0.05);
       padding:12px;
       border-radius:10px;
-      background:var(--glass);
+      margin:6px 0;
       cursor:pointer;
-      transition: transform .12s, background .12s;
+      transition:0.3s;
     }
-    .room-item:hover{ transform: translateY(-3px); background: rgba(255,255,255,0.04) }
-
-    .room-title{font-weight:700}
-    .room-sub{color:var(--muted);font-size:13px}
-
-    .badge{
-      background: rgba(255,255,255,0.03);
-      padding:6px 10px;
-      border-radius:999px;
-      color:var(--muted);
-      font-size:13px;
+    li:hover { background:rgba(255,255,255,0.15); }
+    #jitsi-container {
+      width:100%;
+      max-width:900px;
+      height:550px;
+      margin-top:20px;
+      border-radius:12px;
+      overflow:hidden;
+      display:none;
+    }
+    .controls {
+      margin-top:10px;
       display:flex;
-      gap:8px;
-      align-items:center;
+      justify-content:center;
+      gap:10px;
     }
-
-    /* right column - actions */
-    .right{
-      width:320px;
-      display:flex;flex-direction:column;gap:14px;
-    }
-
-    .btn{
-      background: linear-gradient(90deg,#08325a,#144f82);
-      color:white;
-      border:none;
-      padding:10px 14px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:700;
-      width:100%;
-    }
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
-    .small{color:var(--muted);font-size:13px}
-
-    footer{
-      width:100%;
-      max-width:980px;
-      padding:14px;
-      text-align:center;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    /* room view (Jitsi) */
-    #roomView{ display:none; width:100%;}
-    .room-header{
-      display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid rgba(255,255,255,0.02)
-    }
-    .jitsi-wrap{height:560px;border-radius:10px;overflow:hidden;background:#000;margin-top:10px}
-
-    /* responsive */
-    @media(max-width:900px){
-      main{flex-direction:column}
-      .right{width:100%}
-      .jitsi-wrap{height:420px}
-    }
+    .danger { background:#b72d2d; }
   </style>
 </head>
 <body>
-
-  <header>🎧 School Voice — غرف صوتية تفاعلية</header>
-
+  <header>🎧 School Voice — دردشة المدرسة الصوتية</header>
   <main>
-    <!-- home -->
-    <div class="left">
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-weight:800;font-size:16px">الرومات المفتوحة</div>
-            <div class="small">انضم إلى أي روم للتحدث مع أصدقائك</div>
-          </div>
-          <div id="totalRooms" class="small">0 روم</div>
-        </div>
-
-        <div class="rooms-list" id="roomsList">
-          <!-- عناصر الرومات تظهر هنا -->
-        </div>
+    <div id="homeView">
+      <input type="text" id="roomName" placeholder="اسم الروم">
+      <div>
+        <button id="createBtn">إنشاء روم</button>
+        <button id="refreshBtn">🔄 تحديث الرومات</button>
       </div>
+      <ul id="roomsList"></ul>
     </div>
 
-    <!-- actions -->
-    <aside class="right">
-      <div class="panel">
-        <div style="font-weight:800">إنشاء روم جديد</div>
-        <div class="small" style="margin-top:8px">أدخل اسم الروم ثم اضغط إنشاء — سيصبح الروم مفتوحًا تلقائيًا عند دخولك.</div>
-        <input id="newRoomName" placeholder="اسم الروم..." style="margin-top:10px;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit;width:100%"/>
-        <button id="createRoomBtn" class="btn" style="margin-top:10px">➕ إنشاء والانضمام</button>
-        <button id="refreshBtn" class="btn ghost" style="margin-top:8px">تحديث</button>
+    <div id="roomView" style="display:none;">
+      <h3 id="roomTitle"></h3>
+      <div id="jitsi-container"></div>
+      <div class="controls">
+        <button id="muteBtn">🎙️ كتم / فتح المايك</button>
+        <button id="leaveBtn" class="danger">🚪 مغادرة</button>
       </div>
-
-      <div class="panel">
-        <div style="font-weight:800">تعليمات سريعة</div>
-        <div class="small" style="margin-top:8px;line-height:1.6">
-          • عندما تنضم، يمنحك الموقع حضورًا في الروم ويظهر اسمك للمستخدمين الآخرين. <br/>
-          • عند الخروج (أو غلق التبويب)، يتم إزالة حضورك تلقائيًا؛ وإذا أصبح عدد الحاضرين صفر تُحذف الروم من القائمة. <br/>
-          • المتصفح سيطلب إذن الميكروفون عند الحاجة.
-        </div>
-      </div>
-    </aside>
+    </div>
   </main>
 
-  <!-- room view (hidden until join) -->
-  <div id="roomView" style="width:100%;max-width:980px;margin-bottom:18px">
-    <div class="panel">
-      <div class="room-header">
-        <div>
-          <div id="roomNameDisplay" style="font-weight:800;font-size:16px">الروم</div>
-          <div id="roomCountDisplay" class="small" style="margin-top:6px">0 مشارك</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button id="muteBtn" class="btn" style="padding:8px 12px;font-weight:700">كتم / تشغيل المايك</button>
-          <button id="leaveBtn" class="btn ghost" style="padding:8px 12px">🚪 خروج</button>
-        </div>
-      </div>
+  <!-- مكتبة Jitsi -->
+  <script src="https://meet.jit.si/external_api.js"></script>
 
-      <div class="jitsi-wrap" id="jitsiContainer"></div>
-    </div>
-  </div>
-
-  <footer>© 2025 School Voice — مصمم للمدارس</footer>
-
-  <!-- Firebase (modules) -->
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getDatabase, ref, push, set, onChildAdded, onChildRemoved, onValue, remove, onDisconnect, get, child } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-    // ---------- ضع هنا إعدادات Firebase التي أعطيتَها ----------
+    // ✅ إعداد Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
       authDomain: "school-voice-1b1dc.firebaseapp.com",
@@ -207,325 +126,98 @@
       appId: "1:990135804919:web:38c050a3a2ed1cb8d304f2",
       measurementId: "G-Y8Z1NP232P"
     };
-    // ---------------------------------------------------------
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // عناصر الواجهة
-    const roomsListEl = document.getElementById('roomsList');
-    const totalRoomsEl = document.getElementById('totalRooms');
-    const createRoomBtn = document.getElementById('createRoomBtn');
-    const newRoomNameInput = document.getElementById('newRoomName');
-    const refreshBtn = document.getElementById('refreshBtn');
+    const roomsList = document.getElementById("roomsList");
+    const roomNameInput = document.getElementById("roomName");
+    const homeView = document.getElementById("homeView");
+    const roomView = document.getElementById("roomView");
+    const roomTitle = document.getElementById("roomTitle");
 
-    const roomView = document.getElementById('roomView');
-    const roomsMain = document.querySelector('main');
-    const roomNameDisplay = document.getElementById('roomNameDisplay');
-    const roomCountDisplay = document.getElementById('roomCountDisplay');
-    const jitsiContainer = document.getElementById('jitsiContainer');
-    const muteBtn = document.getElementById('muteBtn');
-    const leaveBtn = document.getElementById('leaveBtn');
+    let api = null;
+    let currentRoom = null;
 
-    // client id فريد لكل تبويب
-    const clientId = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-
-    // حالة
-    let rooms = {}; // cache
-    let usersListeners = {}; // listeners per room for users count
-    let currentRoomId = null;
-    let jitsiApi = null;
-
-    // helper: sanitize room name for Jitsi (no spaces/special)
-    function jitsiRoomNameFromKey(key, name){
-      // combine key + name to avoid collisions
-      return `SchoolVoice_${key}_${(name||'room').replace(/[^a-zA-Z0-9_-]/g,'_')}`;
-    }
-
-    // render room entry
-    function renderRoomItem(key, data){
-      // create element
-      const el = document.createElement('div');
-      el.className = 'room-item';
-      el.id = 'room-'+key;
-      el.innerHTML = `
-        <div>
-          <div class="room-title">${escapeHtml(data.name || 'روم')}</div>
-          <div class="room-sub">${data.createdAt ? new Date(data.createdAt).toLocaleString() : ''}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <div class="badge"><span id="count-${key}">0</span> 👥</div>
-          <div><small class="small">اضغط للانضمام</small></div>
-        </div>
-      `;
-      el.addEventListener('click', ()=> joinRoom(key, data.name));
-      return el;
-    }
-
-    // escape html (simple)
-    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-
-    // listen to /rooms (child_added, child_removed, child_changed)
-    const roomsRef = ref(db, 'rooms');
-    onChildAdded(roomsRef, snap => {
-      const key = snap.key;
-      const data = snap.val();
-      rooms[key] = data;
-      // render item
-      const item = renderRoomItem(key, data);
-      roomsListEl.prepend(item);
-      updateTotalRooms();
-      // attach listener for users count
-      attachUsersListener(key);
-    });
-
-    onChildRemoved(roomsRef, snap => {
-      const key = snap.key;
-      delete rooms[key];
-      const el = document.getElementById('room-'+key);
-      if(el) el.remove();
-      detachUsersListener(key);
-      updateTotalRooms();
-    });
-
-    onChildRemoved(roomsRef, snap => {
-      // handled above
-    });
-
-    // update total count
-    function updateTotalRooms(){
-      const c = Object.keys(rooms).length;
-      totalRoomsEl.textContent = `${c} روم`;
-    }
-
-    // attach listener on /rooms/{key}/users to update count and auto-delete empty room
-    function attachUsersListener(roomKey){
-      if(usersListeners[roomKey]) return;
-      const usersRef = ref(db, `rooms/${roomKey}/users`);
-      const listener = onValue(usersRef, snap => {
-        const countEl = document.getElementById('count-'+roomKey);
-        const count = snap.exists() ? snap.size || Object.keys(snap.val()).length : 0;
-        if(countEl) countEl.textContent = count;
-        // if no users -> remove the room node entirely
-        if(!snap.exists()){
-          // remove room if still exists
-          remove(ref(db, `rooms/${roomKey}`)).catch(()=>{});
-        }
-        // if current room, update room view
-        if(currentRoomId === roomKey){
-          roomCountDisplay.textContent = `${count} ${count === 1 ? 'مشارك' : 'مشتركين'}`;
-        }
+    // 🔹 إنشاء روم جديدة
+    async function createRoom() {
+      const room = roomNameInput.value.trim();
+      if (!room) return alert("❗اكتب اسم الروم أولاً");
+      await set(ref(db, "rooms/" + room), {
+        active: true,
+        createdAt: Date.now()
       });
-      usersListeners[roomKey] = { usersRef, listener };
+      openRoom(room);
     }
 
-    function detachUsersListener(roomKey){
-      const entry = usersListeners[roomKey];
-      if(!entry) return;
-      // Realtime SDK v12 uses onValue which returns an unsubscribe function; but we didn't store it.
-      // Simpler: set to null and let GC; listeners removed when node removed.
-      delete usersListeners[roomKey];
-    }
+    // 🔹 فتح الروم
+    async function openRoom(room) {
+      const snapshot = await get(ref(db, "rooms/" + room));
+      if (!snapshot.exists()) return alert("❌ الروم غير متاحة حاليًا");
 
-    // create & join
-    createRoomBtn.addEventListener('click', async () => {
-      const name = (newRoomNameInput.value || '').trim();
-      if(!name){ alert('اكتب اسم الروم'); return; }
-      // push new room
-      const newRoomRef = push(ref(db, 'rooms'));
-      await set(newRoomRef, { name, createdAt: Date.now() });
-      const key = newRoomRef.key;
-      newRoomNameInput.value = '';
-      // join immediately
-      joinRoom(key, name);
-    });
+      currentRoom = room;
+      homeView.style.display = "none";
+      roomView.style.display = "block";
+      roomTitle.textContent = "🎧 الروم: " + room;
 
-    refreshBtn.addEventListener('click', ()=> {
-      // quick UI refresh: clear and re-query (listeners keep working)
-      roomsListEl.innerHTML = '';
-      // re-render from local cache
-      Object.keys(rooms).forEach(k=>{
-        const el = renderRoomItem(k, rooms[k]);
-        roomsListEl.prepend(el);
-      });
-    });
-
-    // join room: write presence under rooms/{roomId}/users/{clientId}
-    async function joinRoom(roomId, roomName){
-      // ensure room exists (race guard)
-      const roomSnap = await get(child(ref(db), `rooms/${roomId}`));
-      if(!roomSnap.exists()){
-        alert('الروم غير متوفر حالياً.');
-        return;
-      }
-
-      currentRoomId = roomId;
-      // write presence
-      const userRef = ref(db, `rooms/${roomId}/users/${clientId}`);
-      await set(userRef, { joinedAt: Date.now() });
-      // ensure removal onDisconnect
-      try{
-        onDisconnect(userRef).remove();
-      }catch(e){
-        console.warn('onDisconnect may not be available in this environment:', e);
-      }
-
-      // show room view
-      enterRoomUI(roomId, roomName);
-    }
-
-    // enter room UI and init Jitsi
-    function enterRoomUI(roomId, roomName){
-      // hide main area and show roomView
-      document.querySelector('main').style.display = 'none';
-      roomView.style.display = 'block';
-      roomNameDisplay.textContent = roomName || 'روم صوتي';
-      roomCountDisplay.textContent = 'جارٍ الاتصال...';
-
-      // init Jitsi
-      initJitsi(roomId, roomName);
-
-      // attach listener for users count (if not attached)
-      attachUsersListener(roomId);
-    }
-
-    // initialize Jitsi External API
-    function initJitsi(roomId, roomName){
-      // clear container
-      jitsiContainer.innerHTML = '';
-      // build room name safe
-      const jitsiRoom = jitsiRoomNameFromKey(roomId, roomName);
-
-      // load external_api.js (non-module)
-      // external_api.js must be loaded via a regular script tag; ensure it's loaded once
-      if(typeof JitsiMeetExternalAPI === 'undefined'){
-        const s = document.createElement('script');
-        s.src = 'https://meet.jit.si/external_api.js';
-        s.onload = ()=> startJitsi(jitsiRoom);
-        s.onerror = ()=> alert('فشل تحميل Jitsi API — تأكد من اتصال الإنترنت');
-        document.body.appendChild(s);
-      } else {
-        startJitsi(jitsiRoom);
-      }
-    }
-
-    function startJitsi(jitsiRoom){
-      // small options to keep interface minimal
-      const domain = 'meet.jit.si';
+      const domain = "meet.jit.si";
       const options = {
-        roomName: jitsiRoom,
-        parentNode: jitsiContainer,
-        width: '100%',
-        height: '100%',
-        configOverwrite: {
-          startWithAudioMuted: false,
-          startWithVideoMuted: true,
-          disableDeepLinking: true
-        },
-        interfaceConfigOverwrite: {
-          SHOW_JITSI_WATERMARK: false,
-          SHOW_WATERMARK_FOR_GUESTS: false,
-          TOOLBAR_BUTTONS: ['microphone','hangup','tileview']
-        }
+        roomName: room,
+        parentNode: document.getElementById("jitsi-container"),
+        configOverwrite: { startWithVideoMuted: true },
+        interfaceConfigOverwrite: { TOOLBAR_BUTTONS: ["microphone","hangup","chat","tileview"] }
       };
-      // dispose existing
-      if(jitsiApi && typeof jitsiApi.dispose === 'function'){
-        try{ jitsiApi.dispose(); }catch(e){}
-        jitsiApi = null;
-      }
+      api = new JitsiMeetExternalAPI(domain, options);
+      document.getElementById("jitsi-container").style.display = "block";
 
-      jitsiApi = new JitsiMeetExternalAPI(domain, options);
+      api.addEventListener("participantLeft", checkIfRoomEmpty);
+    }
 
-      // sync mute button
-      muteBtn.onclick = ()=> {
-        try{ jitsiApi.executeCommand('toggleAudio'); }catch(e){ console.warn(e) }
-      };
+    // 🔹 كتم / فتح المايك
+    document.getElementById("muteBtn").onclick = () => {
+      if (api) api.executeCommand("toggleAudio");
+    };
 
-      // when Jitsi reports ready or participants update, we could act on it
-      jitsiApi.addEventListener('videoConferenceJoined', () => {
-        console.log('Jitsi: joined');
-      });
+    // 🔹 مغادرة الروم
+    document.getElementById("leaveBtn").onclick = () => {
+      if (api) api.executeCommand("hangup");
+      roomView.style.display = "none";
+      homeView.style.display = "block";
+      document.getElementById("jitsi-container").style.display = "none";
+      api = null;
+      currentRoom = null;
+    };
 
-      jitsiApi.addEventListener('participantLeft', () => {
-        console.log('participantLeft');
-      });
-
-      // hangup button also triggers leave logic
-      leaveBtn.onclick = () => leaveRoom();
-      // if user closes Jitsi by its hangup toolbar, detect via API event
-      try{
-        jitsiApi.addEventListener('audioMuteStatusChanged', (e)=>{ /* optional sync */ });
-        jitsiApi.addEventListener('readyToClose', ()=> {
-          // user pressed hangup inside Jitsi UI
-          leaveRoom();
+    // 🔹 تحديث قائمة الرومات
+    function refreshRooms() {
+      onValue(ref(db, "rooms"), (snapshot) => {
+        roomsList.innerHTML = "";
+        snapshot.forEach(child => {
+          const name = child.key;
+          const li = document.createElement("li");
+          li.textContent = "🎤 " + name;
+          li.onclick = () => openRoom(name);
+          roomsList.appendChild(li);
         });
-      }catch(e){/* ignore */ }
-    }
-
-    // leave room: remove presence and return home
-    async function leaveRoom(){
-      if(!currentRoomId) return;
-      // remove presence explicitly (onDisconnect already registered but remove now)
-      const userRef = ref(db, `rooms/${currentRoomId}/users/${clientId}`);
-      try{ await remove(userRef); }catch(e){ console.warn(e) }
-
-      // dispose Jitsi
-      try{ if(jitsiApi && typeof jitsiApi.dispose === 'function') jitsiApi.dispose(); }catch(e){}
-      jitsiApi = null;
-      jitsiContainer.innerHTML = '';
-
-      // reset UI
-      roomView.style.display = 'none';
-      document.querySelector('main').style.display = '';
-      currentRoomId = null;
-    }
-
-    // cleanup on tab close
-    window.addEventListener('beforeunload', async (e) => {
-      // try to remove presence; rely on onDisconnect as fallback
-      if(currentRoomId){
-        try{ await remove(ref(db, `rooms/${currentRoomId}/users/${clientId}`)); }catch(_){} 
-      }
-    });
-
-    // initial load: read existing rooms once (listeners above handle reactivity)
-    onValue(ref(db, 'rooms'), snap => {
-      // ensure local cache updated for counts; this will also trigger child_added for new nodes
-      // This handler ensures we have current rooms list (for first render)
-      // But we rely mostly on onChildAdded/onChildRemoved set earlier.
-      // Update local cache for any rooms not yet present
-      if(!snap.exists()) {
-        roomsListEl.innerHTML = `<div class="small" style="padding:12px">لا توجد رومات حالياً</div>`;
-        rooms = {};
-        totalRoomsEl.textContent = '0 روم';
-        return;
-      }
-      // Clear the UI and rebuild (keeps it simple)
-      roomsListEl.innerHTML = '';
-      rooms = {};
-      snap.forEach(child => {
-        rooms[child.key] = child.val();
       });
-      Object.keys(rooms).forEach(k=>{
-        const el = renderRoomItem(k, rooms[k]);
-        roomsListEl.prepend(el);
-        attachUsersListener(k);
-      });
-      updateTotalRooms();
-    });
-
-    // utility: show quick alert for errors
-    function showError(msg){
-      alert(msg);
     }
 
-    // helper: count users for a room (used rarely)
-    async function countUsers(roomId){
-      const snap = await get(ref(db, `rooms/${roomId}/users`));
-      return snap.exists() ? (snap.size || Object.keys(snap.val()).length) : 0;
+    // 🔹 حذف الروم إذا فاضية (تلقائي)
+    async function checkIfRoomEmpty() {
+      if (!currentRoom) return;
+      const roomRef = ref(db, "rooms/" + currentRoom);
+      const snapshot = await get(roomRef);
+      if (snapshot.exists()) {
+        remove(roomRef); // يحذفها لو فاضية
+      }
     }
 
-    // END module
+    // 🔹 روابط الأزرار
+    document.getElementById("createBtn").onclick = createRoom;
+    document.getElementById("refreshBtn").onclick = refreshRooms;
+
+    // أول تحميل
+    refreshRooms();
   </script>
 </body>
 </html>
