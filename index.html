@@ -3,54 +3,55 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>🎧 School Voice — الرومات الصوتية</title>
+  <title>🎧 School Voice</title>
   <style>
     body {
       margin:0;
       font-family:'Tajawal',sans-serif;
-      background:linear-gradient(135deg,#010817,#082044);
+      background:#010817;
       color:#eaf1ff;
+      text-align:center;
       display:flex;
       flex-direction:column;
       min-height:100vh;
-      text-align:center;
     }
     header {
       background:#041025;
-      padding:14px;
-      font-weight:700;
-      font-size:20px;
       color:#9fc7ff;
+      font-size:20px;
+      font-weight:700;
+      padding:14px;
     }
     main {
       flex:1;
       display:flex;
       flex-direction:column;
       align-items:center;
+      justify-content:center;
+      gap:16px;
       padding:20px;
     }
     input {
       padding:10px;
       border-radius:8px;
       border:none;
-      width:200px;
-      margin:5px;
       background:#0b2a4d;
       color:#fff;
       text-align:center;
+      width:200px;
+      outline:none;
     }
     button {
-      padding:10px 16px;
-      border:none;
-      border-radius:8px;
       background:#195ab7;
+      border:none;
       color:#fff;
-      cursor:pointer;
+      padding:10px 18px;
+      border-radius:8px;
       font-weight:700;
-      margin:4px;
+      cursor:pointer;
       transition:0.3s;
     }
-    button:hover { background:#2274ff; }
+    button:hover { background:#2b7cff; }
     ul {
       list-style:none;
       padding:0;
@@ -59,44 +60,47 @@
       max-width:400px;
     }
     li {
-      background:rgba(255,255,255,0.05);
+      background:#0d1a3a;
       padding:12px;
       border-radius:10px;
       margin:6px 0;
       cursor:pointer;
       transition:0.3s;
     }
-    li:hover { background:rgba(255,255,255,0.15); }
+    li:hover { background:#1b2c5a; }
     #jitsi-container {
       width:100%;
       max-width:900px;
       height:550px;
-      margin-top:20px;
       border-radius:12px;
       overflow:hidden;
       display:none;
+      margin-top:20px;
     }
     .controls {
-      margin-top:10px;
       display:flex;
       justify-content:center;
       gap:10px;
+      margin-top:10px;
     }
     .danger { background:#b72d2d; }
   </style>
 </head>
 <body>
   <header>🎧 School Voice — دردشة المدرسة الصوتية</header>
+
   <main>
+    <!-- الشاشة الرئيسية -->
     <div id="homeView">
       <input type="text" id="roomName" placeholder="اسم الروم">
       <div>
         <button id="createBtn">إنشاء روم</button>
-        <button id="refreshBtn">🔄 تحديث الرومات</button>
+        <button id="refreshBtn">تحديث 🔄</button>
       </div>
       <ul id="roomsList"></ul>
     </div>
 
+    <!-- شاشة داخل الروم -->
     <div id="roomView" style="display:none;">
       <h3 id="roomTitle"></h3>
       <div id="jitsi-container"></div>
@@ -150,10 +154,10 @@
       openRoom(room);
     }
 
-    // 🔹 فتح الروم
+    // 🔹 فتح روم
     async function openRoom(room) {
       const snapshot = await get(ref(db, "rooms/" + room));
-      if (!snapshot.exists()) return alert("❌ الروم غير متاحة حاليًا");
+      if (!snapshot.exists()) return alert("❌ الروم غير متاحة الآن");
 
       currentRoom = room;
       homeView.style.display = "none";
@@ -164,16 +168,19 @@
       const options = {
         roomName: room,
         parentNode: document.getElementById("jitsi-container"),
-        configOverwrite: { startWithVideoMuted: true },
-        interfaceConfigOverwrite: { TOOLBAR_BUTTONS: ["microphone","hangup","chat","tileview"] }
+        configOverwrite: {
+          startWithVideoMuted: true,
+          disableSimulcast: false
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: ["microphone","chat","hangup","tileview"]
+        }
       };
       api = new JitsiMeetExternalAPI(domain, options);
       document.getElementById("jitsi-container").style.display = "block";
-
-      api.addEventListener("participantLeft", checkIfRoomEmpty);
     }
 
-    // 🔹 كتم / فتح المايك
+    // 🔹 كتم / تشغيل المايك
     document.getElementById("muteBtn").onclick = () => {
       if (api) api.executeCommand("toggleAudio");
     };
@@ -202,21 +209,9 @@
       });
     }
 
-    // 🔹 حذف الروم إذا فاضية (تلقائي)
-    async function checkIfRoomEmpty() {
-      if (!currentRoom) return;
-      const roomRef = ref(db, "rooms/" + currentRoom);
-      const snapshot = await get(roomRef);
-      if (snapshot.exists()) {
-        remove(roomRef); // يحذفها لو فاضية
-      }
-    }
-
-    // 🔹 روابط الأزرار
+    // 🔹 تحميل أولي
     document.getElementById("createBtn").onclick = createRoom;
     document.getElementById("refreshBtn").onclick = refreshRooms;
-
-    // أول تحميل
     refreshRooms();
   </script>
 </body>
