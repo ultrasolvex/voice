@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>صوتنا – دردشة صوتية فاخرة</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="data:application/manifest+json,{}">
+  <meta name="theme-color" content="#0b1426">
+
   <style>
     :root {
-      --bg: #0b1426;
-      --card: #131d35;
-      --accent: #00e0ff;
-      --accent-dark: #00a8cc;
-      --text: #e0f7ff;
-      --muted: #88c0d0;
-      --danger: #e74c3c;
+      --bg: #0b1426; --card: #131d35; --accent: #00e0ff; --accent-dark: #00a8cc;
+      --text: #e0f7ff; --muted: #88c0d0; --danger: #e74c3c; --success: #2ecc71;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Tajawal', sans-serif;
       background: linear-gradient(135deg, var(--bg), #1a2a44);
@@ -25,21 +22,21 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      padding: 16px;
+      overflow-x: hidden;
     }
-
     h2 {
-      margin: 20px 0 10px;
-      font-size: 26px;
+      margin: 16px 0 12px;
+      font-size: 28px;
       color: var(--accent);
-      text-shadow: 0 0 10px rgba(0, 224, 255, 0.3);
+      text-shadow: 0 0 12px rgba(0, 224, 255, 0.3);
+      text-align: center;
     }
-
     #roomList {
-      background: rgba(19, 29, 53, 0.7);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(0, 224, 255, 0.2);
-      border-radius: 18px;
+      background: rgba(19, 29, 53, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 224, 255, 0.15);
+      border-radius: 20px;
       padding: 16px;
       width: 100%;
       max-width: 420px;
@@ -48,13 +45,12 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
     }
-
     .room {
       background: rgba(255, 255, 255, 0.08);
       padding: 14px;
-      border-radius: 14px;
+      border-radius: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -62,91 +58,90 @@
       transition: all 0.3s ease;
       border: 1px solid transparent;
     }
-
     .room:hover {
       background: rgba(0, 224, 255, 0.15);
       border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 224, 255, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0, 224, 255, 0.18);
     }
-
     .room b { font-weight: 700; font-size: 16px; }
-    .room span { 
-      background: rgba(0, 0, 0, 0.3); 
-      padding: 4px 10px; 
-      border-radius: 20px; 
-      font-size: 13px; 
+    .room span {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 5px 11px;
+      border-radius: 20px;
+      font-size: 13px;
       color: var(--accent);
+      font-weight: 600;
     }
-
     .empty {
       color: var(--muted);
       font-size: 15px;
-      padding: 30px;
+      padding: 32px;
       text-align: center;
+      opacity: 0.8;
     }
-
     .footer {
-      margin-top: 20px;
+      margin-top: 16px;
       display: flex;
       gap: 10px;
       justify-content: center;
       flex-wrap: wrap;
     }
-
     input {
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(0, 224, 255, 0.3);
-      background: rgba(255, 255, 255, 0.1);
+      padding: 13px;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 224, 255, 0.28);
+      background: rgba(255, 255, 255, 0.08);
       color: white;
       width: 200px;
       font-size: 15px;
+      transition: 0.3s;
     }
-
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 224, 255, 0.2);
+    }
     input::placeholder { color: #88c0d0; }
-
     button {
       background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      color: white;
+      color: #fff;
       border: none;
-      border-radius: 12px;
-      padding: 12px 20px;
+      border-radius: 14px;
+      padding: 13px 20px;
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       transition: 0.3s;
-      box-shadow: 0 4px 15px rgba(0, 224, 255, 0.3);
+      box-shadow: 0 4px 16px rgba(0, 224, 255, 0.3);
     }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 224, 255, 0.4);
-    }
-
+    button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 224, 255, 0.4); }
     button.danger {
       background: var(--danger);
-      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+      box-shadow: 0 4px 16px rgba(231, 76, 60, 0.3);
     }
-
+    button.success {
+      background: var(--success);
+      box-shadow: 0 4px 16px rgba(46, 204, 113, 0.3);
+    }
     #chatArea {
-      margin-top: 30px;
+      margin-top: 24px;
       width: 100%;
       max-width: 420px;
       display: none;
+      animation: fadeIn 0.4s ease;
     }
-
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
     #participants {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 12px;
-      margin: 20px 0;
+      gap: 14px;
+      margin: 18px 0;
     }
-
     .participant {
-      width: 70px;
-      height: 70px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
       background: var(--card);
       display: flex;
@@ -156,80 +151,76 @@
       font-size: 13px;
       position: relative;
       border: 2px solid transparent;
-      transition: 0.3s;
+      transition: all 0.3s ease;
+      overflow: hidden;
     }
-
     .participant.speaking {
       border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(0, 224, 255, 0.6);
-      animation: pulse 1.5s infinite;
+      box-shadow: 0 0 22px rgba(0, 224, 255, 0.7);
+      animation: pulse 1.3s infinite;
     }
-
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.08); }
     }
-
     .mic {
       position: absolute;
       bottom: 6px;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--accent);
+      background: rgba(0,0,0,0.4);
+      padding: 2px 6px;
+      border-radius: 8px;
     }
-
-    audio { display: none; }
-
-    #micPermission {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.9);
+    .small { font-size: 13px; color: var(--muted); text-align: center; margin: 8px 0; }
+    .requests {
+      margin-top: 10px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      gap: 8px;
+    }
+    .request {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 10px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      z-index: 9999;
-      color: white;
-      font-size: 18px;
+      font-size: 14px;
     }
-
-    #micPermission button {
-      margin-top: 20px;
-      padding: 14px 30px;
-      font-size: 18px;
-    }
+    audio { display: none; }
   </style>
 </head>
 <body>
 
-  <!-- إذن الميكروفون -->
-  <div id="micPermission">
-    <div>ميكروفون</div>
-    <p style="margin:15px 0; max-width:300px; text-align:center;">
-      للدردشة الصوتية، نحتاج إذن الوصول للميكروفون
-    </p>
-    <button id="allowMic">السماح بالميكروفون</button>
-  </div>
-
   <h2>صوتنا – دردشة صوتية فاخرة</h2>
-
   <div id="roomList"></div>
 
   <div class="footer">
     <input id="roomNameInput" placeholder="اسم الغرفة الجديدة" />
-    <button id="createRoomBtn">إنشاء غرفة</button>
+    <button id="createRoomBtn">إنشاء</button>
+    <button id="refreshBtn">تحديث</button>
   </div>
 
   <div id="chatArea">
-    <h3 id="roomTitle" style="color:var(--accent);margin-bottom:10px"></h3>
+    <h3 id="roomTitle" style="color:var(--accent);margin-bottom:10px;text-align:center"></h3>
     <div id="participants"></div>
-    <button id="leaveBtn" class="danger">خروج</button>
+    <div class="small">مستوى الصوت: <span id="vuVal">0</span>%</div>
+    <div class="requests" id="requestsArea" style="display:none"></div>
+    <div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button id="leaveBtn" class="danger">خروج</button>
+      <button id="toggleMicBtn">كتم المايك</button>
+      <button id="sendReqBtn">طلب الكلام</button>
+    </div>
   </div>
 
   <!-- Firebase + WebRTC -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getDatabase, ref, push, set, onValue, remove, onDisconnect, update, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
+    // إعدادات Firebase (من مشروعك)
     const firebaseConfig = {
       apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
       authDomain: "school-voice-1b1dc.firebaseapp.com",
@@ -237,222 +228,333 @@
       projectId: "school-voice-1b1dc",
       storageBucket: "school-voice-1b1dc.firebasestorage.app",
       messagingSenderId: "990135804919",
-      appId: "1:990135804919:web:38c050a3a2ed1cb8d304f2",
-      measurementId: "G-Y8Z1NP232P"
+      appId: "1:990135804919:web:9815351161a03ce7d304f2",
+      measurementId: "G-QRPZW68H5E"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth(app);
 
-    const clientId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-    let myName = "";
-    let currentRoom = null;
-    let localStream = null;
-    const peers = {};
-
+    // ICE Servers (STUN + TURN لاحقًا)
     const iceServers = {
       iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        {
-          urls: [
-            'turn:global.relay.metered.ca:80',
-            'turn:global.relay.metered.ca:443',
-            'turns:global.relay.metered.ca:443?transport=tcp'
-          ],
-          username: 'openai',
-          credential: 'openai'
-        }
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
       ]
     };
 
-    const micPermission = document.getElementById("micPermission");
-    const allowMicBtn = document.getElementById("allowMic");
-    const roomList = document.getElementById("roomList");
-    const chatArea = document.getElementById("chatArea");
-    const roomTitle = document.getElementById("roomTitle");
-    const participants = document.getElementById("participants");
-    const leaveBtn = document.getElementById("leaveBtn");
+    // DOM Elements
+    const roomList = document.getElementById('roomList');
+    const createRoomBtn = document.getElementById('createRoomBtn');
+    const roomNameInput = document.getElementById('roomNameInput');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const chatArea = document.getElementById('chatArea');
+    const roomTitle = document.getElementById('roomTitle');
+    const participants = document.getElementById('participants');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const toggleMicBtn = document.getElementById('toggleMicBtn');
+    const sendReqBtn = document.getElementById('sendReqBtn');
+    const requestsArea = document.getElementById('requestsArea');
+    const vuVal = document.getElementById('vuVal');
 
-    // طلب إذن الميكروفون
-    allowMicBtn.onclick = async () => {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        micPermission.style.display = 'none';
+    // State
+    let me = null;
+    let currentRoomId = null;
+    let localStream = null;
+    let peers = {};
+    let analyser = null, audioCtx = null, rafId = null;
+    let isMuted = false;
 
-        myName = prompt("ادخل اسمك:") || "ضيف";
-        if (!myName.trim()) myName = "ضيف";
-
+    // تسجيل دخول مجهول
+    signInAnonymously(auth).catch(err => console.error("Auth failed:", err));
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        me = { uid: user.uid, name: 'ضيف' + user.uid.slice(-4) };
         loadRooms();
-      } catch (err) {
-        alert("يجب السماح بالميكروفون لاستخدام التطبيق");
       }
-    };
+    });
 
+    // تحميل الغرف
     function loadRooms() {
-      onValue(ref(db, 'rooms'), (snap) => {
+      onValue(ref(db, 'rooms'), snap => {
         const rooms = snap.val() || {};
         roomList.innerHTML = '';
-        const active = Object.entries(rooms).filter(([_, d]) => d.users && Object.keys(d.users).length > 0);
-        if (active.length === 0) {
+        const activeRooms = Object.entries(rooms)
+          .filter(([_, data]) => data.users && Object.keys(data.users).length > 0)
+          .sort((a, b) => (b[1].created || 0) - (a[1].created || 0))
+          .slice(0, 12);
+
+        if (!activeRooms.length) {
           roomList.innerHTML = '<div class="empty">لا توجد غرف مفتوحة الآن</div>';
-        } else {
-          active.slice(0, 7).forEach(([id, d]) => {
-            const div = document.createElement('div');
-            div.className = 'room';
-            div.innerHTML = `<b>${d.name}</b><span>${Object.keys(d.users).length} متصل</span>`;
-            div.onclick = () => joinRoom(id, d.name);
-            roomList.appendChild(div);
-          });
+          return;
         }
-      });
+
+        activeRooms.forEach(([id, data]) => {
+          const div = document.createElement('div');
+          div.className = 'room';
+          const name = data.name || 'غرفة بدون اسم';
+          const count = Object.keys(data.users || {}).length;
+          div.innerHTML = `<b>${escapeHtml(name)}</b><span>${count} متصل</span>`;
+          div.onclick = () => joinRoom(id, name);
+          roomList.appendChild(div);
+        });
+      }, { onlyOnce: false });
     }
 
-    document.getElementById("createRoomBtn").onclick = () => {
-      const name = document.getElementById("roomNameInput").value.trim();
-      if (!name) return alert("اكتب اسم الغرفة");
-      const roomRef = push(ref(db, 'rooms'));
-      set(roomRef, { name, host: clientId, created: Date.now(), users: {} });
-      joinRoom(roomRef.key, name);
+    refreshBtn.onclick = loadRooms;
+    createRoomBtn.onclick = async () => {
+      let name = roomNameInput.value.trim();
+      if (!name) return alert('أدخل اسم الغرفة');
+      if (name.length > 30) name = name.slice(0, 27) + '...';
+      const newRef = push(ref(db, 'rooms'));
+      await set(newRef, { name, host: me.uid, created: Date.now(), users: {} });
+      roomNameInput.value = '';
+      joinRoom(newRef.key, name);
     };
 
+    // الانضمام للغرفة
     async function joinRoom(roomId, roomName) {
-      if (!localStream) return alert("يجب السماح بالميكروفون أولاً");
-
-      currentRoom = roomId;
-      roomTitle.textContent = `أنت في: ${roomName}`;
+      currentRoomId = roomId;
+      roomTitle.textContent = `الغرفة: ${roomName}`;
       chatArea.style.display = 'block';
       document.querySelector('.footer').style.display = 'none';
       roomList.style.display = 'none';
 
-      const userRef = ref(db, `rooms/${roomId}/users/${clientId}`);
-      await set(userRef, { name: myName, joined: Date.now() });
+      const userRef = ref(db, `rooms/${roomId}/users/${me.uid}`);
+      await set(userRef, { name: me.name, joined: Date.now(), isHost: false });
       onDisconnect(userRef).remove();
 
-      const mutedAudio = new Audio();
-      mutedAudio.srcObject = localStream;
-      mutedAudio.muted = true;
-      mutedAudio.autoplay = true;
-      document.body.appendChild(mutedAudio);
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        });
+        startAnalyser(localStream);
+      } catch (err) {
+        alert('فشل الوصول للمايكروفون: ' + err.message);
+        leaveRoom();
+        return;
+      }
 
-      onValue(ref(db, `rooms/${roomId}/users`), (snap) => {
+      // استماع للمستخدمين
+      onValue(ref(db, `rooms/${roomId}/users`), snap => {
         const users = snap.val() || {};
-        participants.innerHTML = '';
-        Object.entries(users).forEach(([id, user]) => {
-          if (id !== clientId) createPeerConnection(id, true);
-          const el = document.createElement('div');
-          el.className = 'participant';
-          el.innerHTML = `<div>${user.name.split(' ')[0]}</div><div class="mic">ميكروفون</div>`;
-          el.id = `peer-${id}`;
-          participants.appendChild(el);
+        renderParticipants(users);
+        Object.keys(users).forEach(id => {
+          if (id !== me.uid && !peers[id]) createPeer(id, true);
         });
       });
 
-      onValue(ref(db, `signals/${roomId}`), (snap) => {
+      // استماع للإشارات
+      onValue(ref(db, `signals/${roomId}`), async snap => {
         const signals = snap.val() || {};
-        Object.entries(signals).forEach(([sigId, sig]) => {
-          if (sig.to === clientId && sig.from !== clientId) {
-            handleSignal(sig.from, sig);
-            remove(ref(db, `signals/${roomId}/${sigId}`));
-          }
-        });
+        for (const [fromId, msg] of Object.entries(signals)) {
+          if (fromId === me.uid || (msg.to && msg.to !== me.uid && msg.to !== 'all')) continue;
+          await handleSignal(fromId, msg);
+          remove(ref(db, `signals/${roomId}/${fromId}`));
+        }
       });
+
+      // طلبات الدخول
+      onValue(ref(db, `rooms/${roomId}/requests`), snap => renderRequests(snap.val() || {}));
     }
 
-    function createPeerConnection(peerId, isInitiator) {
+    // WebRTC Peer
+    async function createPeer(peerId, initiator = false) {
       if (peers[peerId]) return;
       const pc = new RTCPeerConnection(iceServers);
-      peers[peerId] = pc;
+      peers[peerId] = { pc, audioEl: null, speaking: false };
 
-      localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+      localStream?.getTracks().forEach(t => pc.addTrack(t, localStream));
 
-      pc.ontrack = (e) => {
-        const audio = new Audio();
+      pc.ontrack = e => {
+        let audio = peers[peerId].audioEl;
+        if (!audio) {
+          audio = new Audio();
+          audio.autoplay = true;
+          peers[peerId].audioEl = audio;
+        }
         audio.srcObject = e.streams[0];
-        audio.autoplay = true;
-        document.body.appendChild(audio);
-
-        const el = document.getElementById(`peer-${peerId}`);
-        if (el) {
-          el.classList.add('speaking');
-          setTimeout(() => el.classList.remove('speaking'), 600);
-        }
+        markSpeaking(peerId);
       };
 
-      pc.onicecandidate = (e) => {
+      pc.onicecandidate = e => {
         if (e.candidate) {
-          const sigRef = push(ref(db, `signals/${currentRoom}`));
-          set(sigRef, { from: clientId, to: peerId, candidate: e.candidate });
+          set(ref(db, `signals/${currentRoomId}/${me.uid}`), {
+            to: peerId,
+            candidate: e.candidate.toJSON()
+          });
         }
       };
-
-      if (isInitiator) {
-        pc.createOffer()
-          .then(offer => pc.setLocalDescription(offer))
-          .then(() => {
-            const sigRef = push(ref(db, `signals/${currentRoom}`));
-            set(sigRef, { from: clientId, to: peerId, sdp: pc.localDescription });
-          })
-          .catch(console.error);
-      }
 
       pc.onconnectionstatechange = () => {
-        if (pc.connectionState === 'failed') delete peers[peerId];
-      };
-    }
-
-    async function handleSignal(fromId, signal) {
-      let pc = peers[fromId];
-      if (!pc) {
-        pc = new RTCPeerConnection(iceServers);
-        peers[fromId] = pc;
-        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-        pc.ontrack = (e) => {
-          const audio = new Audio();
-          audio.srcObject = e.streams[0];
-          audio.autoplay = true;
-          document.body.appendChild(audio);
-          const el = document.getElementById(`peer-${fromId}`);
-          if (el) { el.classList.add('speaking'); setTimeout(() => el.classList.remove('speaking'), 600); }
-        };
-        pc.onicecandidate = (e) => {
-          if (e.candidate) {
-            const sigRef = push(ref(db, `signals/${currentRoom}`));
-            set(sigRef, { from: clientId, to: fromId, candidate: e.candidate });
-          }
-        };
-      }
-
-      try {
-        if (signal.sdp) {
-          await pc.setRemoteDescription(signal.sdp);
-          if (signal.sdp.type === 'offer') {
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            const sigRef = push(ref(db, `signals/${currentRoom}`));
-            set(sigRef, { from: clientId, to: fromId, sdp: pc.localDescription });
-          }
-        } else if (signal.candidate) {
-          await pc.addIceCandidate(signal.candidate);
+        if (['failed', 'closed'].includes(pc.connectionState)) {
+          cleanupPeer(peerId);
         }
-      } catch (err) {
-        console.error("Signal error:", err);
+      };
+
+      if (initiator) {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await set(ref(db, `signals/${currentRoomId}/${me.uid}`), {
+          to: peerId,
+          sdp: pc.localDescription.toJSON()
+        });
+      }
+
+      return peers[peerId];
+    }
+
+    async function handleSignal(fromId, msg) {
+      if (!peers[fromId]) await createPeer(fromId);
+      const pc = peers[fromId].pc;
+
+      if (msg.sdp) {
+        await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        if (msg.sdp.type === 'offer') {
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          await set(ref(db, `signals/${currentRoomId}/${me.uid}`), {
+            to: fromId,
+            sdp: pc.localDescription.toJSON()
+          });
+        }
+      } else if (msg.candidate) {
+        await pc.addIceCandidate(msg.candidate).catch(() => {});
       }
     }
 
-    leaveBtn.onclick = async () => {
-      if (!currentRoom) return;
-      await remove(ref(db, `rooms/${currentRoom}/users/${clientId}`));
-      Object.values(peers).forEach(pc => pc.close());
-      Object.keys(peers).forEach(id => delete peers[id]);
+    function markSpeaking(id) {
+      const el = document.getElementById('peer-' + id);
+      if (el && !peers[id]?.speaking) {
+        el.classList.add('speaking');
+        peers[id].speaking = true;
+        setTimeout(() => {
+          el.classList.remove('speaking');
+          peers[id].speaking = false;
+        }, 800);
+      }
+    }
+
+    // طلب الكلام
+    sendReqBtn.onclick = async () => {
+      if (!currentRoomId) return;
+      const reqRef = push(ref(db, `rooms/${currentRoomId}/requests`));
+      await set(reqRef, { from: me.uid, name: me.name, type: 'speak', status: 'pending', at: Date.now() });
+      alert('تم إرسال طلب الكلام');
+    };
+
+    // عرض طلبات المضيف
+    async function renderRequests(reqs) {
+      const roomSnap = await get(ref(db, `rooms/${currentRoomId}`));
+      const room = roomSnap.val();
+      if (!room || room.host !== me.uid) {
+        requestsArea.style.display = 'none';
+        return;
+      }
+      requestsArea.style.display = 'block';
+      requestsArea.innerHTML = '';
+
+      Object.entries(reqs).forEach(([id, r]) => {
+        if (r.status !== 'pending') return;
+        const div = document.createElement('div');
+        div.className = 'request';
+        div.innerHTML = `<div><b>${escapeHtml(r.name)}</b><div class="small">يطلب الكلام</div></div>`;
+        const btns = document.createElement('div');
+        btns.style.display = 'flex'; btns.style.gap = '6px';
+        const accept = document.createElement('button'); accept.textContent = 'سماح'; accept.className = 'success';
+        const reject = document.createElement('button'); reject.textContent = 'رفض'; reject.className = 'danger';
+        accept.onclick = () => update(ref(db, `rooms/${currentRoomId}/requests/${id}`), { status: 'accepted' });
+        reject.onclick = () => update(ref(db, `rooms/${currentRoomId}/requests/${id}`), { status: 'rejected' });
+        btns.append(accept, reject);
+        div.appendChild(btns);
+        requestsArea.appendChild(div);
+      });
+    }
+
+    // عرض المشاركين
+    function renderParticipants(users) {
+      participants.innerHTML = '';
+      Object.entries(users).forEach(([id, user]) => {
+        const el = document.createElement('div');
+        el.className = 'participant';
+        el.id = 'peer-' + id;
+        const short = (user.name || 'مجهول').split(' ')[0].slice(0, 8);
+        el.innerHTML = `<div>${escapeHtml(short)}</div><div class="mic">ميكروفون</div>`;
+        participants.appendChild(el);
+      });
+    }
+
+    // كتم/تشغيل المايك
+    toggleMicBtn.onclick = () => {
+      if (!localStream) return;
+      isMuted = !isMuted;
+      localStream.getAudioTracks()[0].enabled = !isMuted;
+      toggleMicBtn.textContent = isMuted ? 'تشغيل المايك' : 'كتم المايك';
+      toggleMicBtn.style.background = isMuted ? 'var(--danger)' : 'linear-gradient(135deg, var(--accent), var(--accent-dark))';
+    };
+
+    // الخروج
+    leaveBtn.onclick = leaveRoom;
+    async function leaveRoom() {
+      if (!currentRoomId) return;
+      await remove(ref(db, `rooms/${currentRoomId}/users/${me.uid}`));
+      Object.values(peers).forEach(p => p.pc?.close());
+      peers = {};
       localStream?.getTracks().forEach(t => t.stop());
+      stopAnalyser();
       chatArea.style.display = 'none';
       document.querySelector('.footer').style.display = 'flex';
       roomList.style.display = 'block';
-      currentRoom = null;
-      micPermission.style.display = 'flex';
-    };
+      currentRoomId = null;
+    }
 
-    window.addEventListener('beforeunload', leaveBtn.onclick);
+    // VU Meter
+    function startAnalyser(stream) {
+      audioCtx = new AudioContext();
+      const source = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+
+      const loop = () => {
+        analyser.getByteFrequencyData(data);
+        const avg = data.reduce((a, b) => a + b) / data.length;
+        const pct = Math.min(100, Math.round((avg / 255) * 120));
+        vuVal.textContent = pct;
+        rafId = requestAnimationFrame(loop);
+      };
+      loop();
+    }
+
+    function stopAnalyser() {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (audioCtx) audioCtx.close();
+      analyser = null; audioCtx = null; rafId = null;
+      vuVal.textContent = '0';
+    }
+
+    function cleanupPeer(id) {
+      if (peers[id]) {
+        peers[id].pc?.close();
+        delete peers[id];
+      }
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    // تحديث تلقائي كل 30 ثانية
+    setInterval(() => {
+      if (!currentRoomId) loadRooms();
+    }, 30000);
+
+    // دعم iOS: تشغيل الصوت عند التفاعل
+    document.body.addEventListener('touchstart', () => {}, { once: true });
   </script>
 </body>
 </html>
