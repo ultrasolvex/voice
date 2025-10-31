@@ -178,9 +178,38 @@
     }
 
     audio { display: none; }
+
+    /* إشعار إذن الميكروفون */
+    #micPermission {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      font-size: 18px;
+    }
+
+    #micPermission button {
+      margin-top: 20px;
+      padding: 14px 30px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
+
+  <!-- إذن الميكروفون -->
+  <div id="micPermission">
+    <div>ميكروفون</div>
+    <p style="margin:15px 0; max-width:300px; text-align:center;">
+      للدردشة الصوتية، نحتاج إذن الوصول للميكروفون
+    </p>
+    <button id="allowMic">السماح بالميكروفون</button>
+  </div>
 
   <h2>صوتنا – دردشة صوتية فاخرة</h2>
 
@@ -202,7 +231,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-    // Firebase Config (اللي أنت جبته)
     const firebaseConfig = {
       apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
       authDomain: "school-voice-1b1dc.firebaseapp.com",
@@ -218,39 +246,56 @@
     const db = getDatabase(app);
 
     const clientId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-    let myName = prompt("ادخل اسمك:") || "ضيف";
+    let myName = "";
     let currentRoom = null;
     let localStream = null;
     const peers = {};
     const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
+    const micPermission = document.getElementById("micPermission");
+    const allowMicBtn = document.getElementById("allowMic");
     const roomList = document.getElementById("roomList");
     const chatArea = document.getElementById("chatArea");
     const roomTitle = document.getElementById("roomTitle");
     const participants = document.getElementById("participants");
     const leaveBtn = document.getElementById("leaveBtn");
 
-    // تحديث قائمة الرومات
-    onValue(ref(db, 'rooms'), (snap) => {
-      const rooms = snap.val() || {};
-      roomList.innerHTML = '';
-      const active = Object.entries(rooms).filter(([_, data]) => data.users && Object.keys(data.users).length > 0);
+    // طلب إذن الميكروفون
+    allowMicBtn.onclick = async () => {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micPermission.style.display = 'none';
 
-      if (active.length === 0) {
-        roomList.innerHTML = '<div class="empty">لا توجد غرف مفتوحة الآن</div>';
-      } else {
-        active.slice(0, 7).forEach(([roomId, data]) => {
-          const div = document.createElement('div');
-          div.className = 'room';
-          div.innerHTML = `<b>${data.name}</b><span>${Object.keys(data.users).length} متصل</span>`;
-          div.onclick = () => joinRoom(roomId, data.name);
-          roomList.appendChild(div);
-        });
+        myName = prompt("ادخل اسمك:") || "ضيف";
+        if (!myName.trim()) myName = "ضيف";
+
+        // تحديث قائمة الرومات بعد الإذن
+        loadRooms();
+      } catch (err) {
+        alert("يجب السماح بالميكروفون لاستخدام التطبيق");
       }
-    });
+    };
 
-    // إنشاء غرفة
-    document.getElementById("createRoomBtn").onclick = () => {
+    function loadRooms() {
+      onValue(ref(db, 'rooms'), (snap) => {
+        const rooms = snap.val() || {};
+        roomList.innerHTML = '';
+        const active = Object.entries(rooms).filter(([_, d]) => d.users && Object.keys(d.users).length > 0);
+        if (active.length === 0) {
+          roomList.innerHTML = '<div class="empty">لا توجد غرف مفتوحة الآن</div>';
+        } else {
+          active.slice(0, 7).forEach(([id, d]) => {
+            const div = document.createElement('div');
+            div.className = 'room';
+            div.innerHTML = `<b>${d.name}</b><span>${Object.keys(d.users).length} متصل</span>`;
+            div.onclick = () => joinRoom(id, d.name);
+            roomList.appendChild(div);
+          });
+        }
+      });
+    }
+
+    document.getElementById("creatRoomBtn").onclick = () => {
       const name = document.getElementById("roomNameInput").value.trim();
       if (!name) return alert("اكتب اسم الغرفة");
       const roomRef = push(ref(db, 'rooms'));
@@ -258,8 +303,9 @@
       joinRoom(roomRef.key, name);
     };
 
-    // الانضمام
     async function joinRoom(roomId, roomName) {
+      if (!localStream) return alert("يجب السماح بالميكروفون أولاً");
+
       currentRoom = roomId;
       roomTitle.textContent = `أنت في: ${roomName}`;
       chatArea.style.display = 'block';
@@ -270,9 +316,14 @@
       await set(userRef, { name: myName, joined: Date.now() });
       onDisconnect(userRef).remove();
 
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      document.body.appendChild(Object.assign(document.createElement('audio'), { srcObject: localStream, muted: true, autoplay: true }));
+      // صوت محلي (مكتوم)
+      const mutedAudio = new Audio();
+      mutedAudio.srcObject = localStream;
+      mutedAudio.muted = true;
+      mutedAudio.autoplay = true;
+      document.body.appendChild(mutedAudio);
 
+      // مراقبة المستخدمين
       onValue(ref(db, `rooms/${roomId}/users`), (snap) => {
         const users = snap.val() || {};
         participants.innerHTML = '';
@@ -286,12 +337,13 @@
         });
       });
 
+      // مراقبة الإشارات
       onValue(ref(db, `signals/${roomId}`), (snap) => {
         const signals = snap.val() || {};
-        Object.entries(signals).forEach(([fromId, signal]) => {
-          if (fromId !== clientId && signal.to === clientId) {
-            handleSignal(fromId, signal);
-            remove(ref(db, `signals/${roomId}/${fromId}`));
+        Object.entries(signals).forEach(([sigId, sig]) => {
+          if (sig.to === clientId && sig.from !== clientId) {
+            handleSignal(sig.from, sig);
+            remove(ref(db, `signals/${roomId}/${sigId}`));
           }
         });
       });
@@ -302,7 +354,7 @@
       const pc = new RTCPeerConnection(iceServers);
       peers[peerId] = pc;
 
-      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+      localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
       pc.ontrack = (e) => {
         const audio = new Audio();
@@ -313,16 +365,14 @@
         const el = document.getElementById(`peer-${peerId}`);
         if (el) {
           el.classList.add('speaking');
-          setTimeout(() => el.classList.remove('speaking'), 500);
+          setTimeout(() => el.classList.remove('speaking'), 600);
         }
       };
 
       pc.onicecandidate = (e) => {
         if (e.candidate) {
-          set(ref(db, `signals/${currentRoom}/${clientId}`), {
-            to: peerId,
-            candidate: e.candidate
-          });
+          const sigRef = push(ref(db, `signals/${currentRoom}`));
+          set(sigRef, { from: clientId, to: peerId, candidate: e.candidate });
         }
       };
 
@@ -330,11 +380,10 @@
         pc.createOffer()
           .then(offer => pc.setLocalDescription(offer))
           .then(() => {
-            set(ref(db, `signals/${currentRoom}/${clientId}`), {
-              to: peerId,
-              sdp: pc.localDescription
-            });
-          });
+            const sigRef = push(ref(db, `signals/${currentRoom}`));
+            set(sigRef, { from: clientId, to: peerId, sdp: pc.localDescription });
+          })
+          .catch(console.error);
       }
 
       pc.onconnectionstatechange = () => {
@@ -347,21 +396,37 @@
       if (!pc) {
         pc = new RTCPeerConnection(iceServers);
         peers[fromId] = pc;
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        pc.ontrack = (e) => {
+          const audio = new Audio();
+          audio.srcObject = e.streams[0];
+          audio.autoplay = true;
+          document.body.appendChild(audio);
+          const el = document.getElementById(`peer-${fromId}`);
+          if (el) { el.classList.add('speaking'); setTimeout(() => el.classList.remove('speaking'), 600); }
+        };
+        pc.onicecandidate = (e) => {
+          if (e.candidate) {
+            const sigRef = push(ref(db, `signals/${currentRoom}`));
+            set(sigRef, { from: clientId, to: fromId, candidate: e.candidate });
+          }
+        };
       }
 
-      if (signal.sdp) {
-        await pc.setRemoteDescription(signal.sdp);
-        if (signal.sdp.type === 'offer') {
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          set(ref(db, `signals/${currentRoom}/${clientId}`), {
-            to: fromId,
-            sdp: pc.localDescription
-          });
+      try {
+        if (signal.sdp) {
+          await pc.setRemoteDescription(signal.sdp);
+          if (signal.sdp.type === 'offer') {
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            const sigRef = push(ref(db, `signals/${currentRoom}`));
+            set(sigRef, { from: clientId, to: fromId, sdp: pc.localDescription });
+          }
+        } else if (signal.candidate) {
+          await pc.addIceCandidate(signal.candidate);
         }
-      } else if (signal.candidate) {
-        await pc.addIceCandidate(signal.candidate);
+      } catch (err) {
+        console.error("Signal error:", err);
       }
     }
 
@@ -375,6 +440,7 @@
       document.querySelector('.footer').style.display = 'flex';
       roomList.style.display = 'block';
       currentRoom = null;
+      micPermission.style.display = 'flex'; // إعادة طلب الإذن
     };
 
     window.addEventListener('beforeunload', leaveBtn.onclick);
