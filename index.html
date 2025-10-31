@@ -3,51 +3,63 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>🎙️ School Voice — الإصدار النهائي</title>
+<title>School Voice — نسخة تصحيحية نهائية</title>
 <style>
-  :root{--bg1:#0a1223;--bg2:#3a1a63}
+  :root{--bg1:#07162a;--bg2:#3a1a63}
   html,body{height:100%;margin:0;font-family:'Tajawal',sans-serif;background:linear-gradient(to bottom,var(--bg1),var(--bg2));color:#fff;display:flex;align-items:center;justify-content:center}
-  .card{width:96%;max-width:720px;background:rgba(255,255,255,0.05);border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
-  h1{margin:0 0 8px;font-size:22px;text-align:center}
-  p{margin:6px 0 14px;color:rgba(255,255,255,0.85);text-align:center}
+  .card{width:96%;max-width:820px;background:rgba(255,255,255,0.04);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+  h1{margin:0 0 8px;font-size:20px}
+  p{margin:6px 0 14px;color:rgba(255,255,255,0.85)}
+  .row{display:flex;gap:8px}
   input{flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.08);color:#fff}
   button{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;background:linear-gradient(90deg,#6d2fb0,#2c77ff54);color:#fff}
-  .rooms{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow:auto;padding-right:6px}
-  .room-btn{background:rgba(255,255,255,0.08);border-radius:10px;padding:10px;text-align:center;cursor:pointer}
-  .status{margin-top:12px;padding:12px;border-radius:10px;background:rgba(0,0,0,0.25);font-size:14px;text-align:center}
-  .participants{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;justify-content:center}
-  .part{background:rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;font-size:13px}
-  footer{margin-top:12px;font-size:12px;opacity:.8;text-align:center}
+  .rooms{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:180px;overflow:auto;padding-right:6px}
+  .room-btn{background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;text-align:center;cursor:pointer}
+  .status{margin-top:12px;padding:12px;border-radius:10px;background:rgba(0,0,0,0.25);font-size:14px}
+  .participants{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .part{background:rgba(255,255,255,0.06);padding:8px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:8px}
+  .debug{margin-top:12px;font-size:13px;background:rgba(0,0,0,0.25);padding:10px;border-radius:8px;max-height:160px;overflow:auto}
+  .mute-btn{background:#ff4d4d;color:#fff;border-radius:8px;padding:6px 8px;border:none;cursor:pointer}
+  footer{margin-top:12px;font-size:12px;opacity:.8}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
+  .overlay button{padding:14px 20px;border-radius:12px;border:none;background:linear-gradient(90deg,#6d2fb0,#2c77ff);font-weight:700;color:#fff}
+  audio{display:block;margin-top:6px}
 </style>
 </head>
 <body>
   <div class="card">
-    <h1>🎧 School Voice</h1>
-    <p>ادخل اسم الروم واضغط "ادخل" لتتحدث مع الآخرين فورًا</p>
+    <h1>🎙️ School Voice — نسخة تصحيحية</h1>
+    <p>ادخل اسم الروم واضغط "ادخل". افتح نفس الرابط على جهاز آخر واكتب نفس اسم الروم بالضبط.</p>
 
-    <div style="display:flex;gap:8px;justify-content:center">
+    <div class="row">
       <input id="roomInput" placeholder="اسم الروم (مثال: الصف-1)" />
       <button id="joinBtn">ادخل</button>
+      <button id="muteBtn" class="mute-btn" style="display:none">كتم المايك</button>
     </div>
 
-    <h3 style="margin-top:16px;margin-bottom:6px;text-align:center">🗂 الرومات المفتوحة</h3>
+    <h3 style="margin-top:16px;margin-bottom:6px">🗂 الرومات المفتوحة</h3>
     <div id="roomsList" class="rooms">جاري التحميل...</div>
 
-    <h3 style="margin-top:16px;margin-bottom:6px;text-align:center">👥 الموجودون الآن</h3>
+    <h3 style="margin-top:16px;margin-bottom:6px">👥 الموجودون الآن</h3>
     <div id="peers" class="participants"><div class="part">لا أحد</div></div>
 
     <div id="status" class="status">الحالة: غير متصل</div>
-    <footer>إصدار نهائي • يعمل من الجوال أو الكمبيوتر • صوت واضح بإذن الله</footer>
+
+    <div class="debug" id="debugLog"></div>
+
+    <footer>اشتغل على GitHub Pages أو أي رابط HTTPS • اضغط الشاشة إن لزم للموبايل</footer>
   </div>
 
+  <!-- سكريبت -->
 <script type="module">
-// ===== إعداد Firebase =====
+// ==== Firebase imports ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import {
-  getDatabase, ref, set, onValue, push,
-  onChildAdded, remove, onDisconnect
+  getDatabase, ref, set, update, onValue, push,
+  onChildAdded, onChildRemoved, remove, onDisconnect, get, child
 } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
+// ==== تكوين Firebase (خليها كما هي عندك) ====
 const firebaseConfig = {
   apiKey: "AIzaSyAQ6gD7dayX_VRzSIsI5UecS212Ki4N16o",
   authDomain: "school-voice-1b1dc.firebaseapp.com",
@@ -60,43 +72,65 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ===== عناصر الواجهة =====
+// ==== عناصر الواجهة ====
 const joinBtn = document.getElementById("joinBtn");
 const roomInput = document.getElementById("roomInput");
 const roomsList = document.getElementById("roomsList");
 const peersEl = document.getElementById("peers");
 const statusEl = document.getElementById("status");
+const debugLog = document.getElementById("debugLog");
+const muteBtn = document.getElementById("muteBtn");
 
-// ===== متغيرات عامة =====
+// ==== متغيرات ====
 const peerId = crypto.randomUUID ? crypto.randomUUID() : "p-"+Math.random().toString(36).slice(2,9);
 let roomName = null;
 let localStream = null;
 const pcs = {}, audioEls = {};
+let micEnabled = true;
 const RTC_CONFIG = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
-// ===== عرض الرومات =====
+// سجل ديباغ مختصر
+function log(...args){
+  console.log(...args);
+  const t = document.createElement('div');
+  t.textContent = args.map(a=> (typeof a==='object'? JSON.stringify(a): String(a))).join(' ');
+  debugLog.appendChild(t);
+  debugLog.scrollTop = debugLog.scrollHeight;
+}
+
+// ==== عرض الرومات المتاحة (ننشئ مسار meta لكل روم عند الانضمام) ====
 onValue(ref(db, "rooms"), (snap)=>{
   const val = snap.val();
   roomsList.innerHTML = "";
-  if(!val){ roomsList.innerHTML="<div>لا توجد رومات حالياً</div>"; return; }
+  if(!val){ roomsList.innerHTML = "<div>لا توجد رومات حالياً</div>"; return; }
   Object.keys(val).forEach(r=>{
-    const d=document.createElement("div");
-    d.className="room-btn";
-    d.textContent=r;
-    d.onclick=()=>{ roomInput.value=r; joinRoom(); };
+    const d = document.createElement('div');
+    d.className = 'room-btn';
+    d.textContent = r;
+    d.onclick = ()=>{ roomInput.value = r; joinRoom(); };
     roomsList.appendChild(d);
   });
 });
 
-// ===== دالة الانضمام =====
+// ==== انضمام للغرفة ====
 joinBtn.onclick = joinRoom;
+muteBtn.onclick = () => {
+  micEnabled = !micEnabled;
+  if(localStream){
+    localStream.getAudioTracks().forEach(t => t.enabled = micEnabled);
+  }
+  muteBtn.textContent = micEnabled ? "كتم المايك" : "تشغيل المايك";
+};
+
 async function joinRoom(){
   const r = roomInput.value.trim();
-  if(!r) return alert("اكتب اسم الروم أولاً");
+  if(!r) return alert("اكتب اسم الروم أولاً (بدون مسافات إضافية)");
   roomName = r;
-  statusEl.textContent = `🎤 جاري فتح المايك...`;
+  statusEl.textContent = '🎤 جاري فتح المايك...';
+  log('بدء الانضمام إلى', roomName, 'peerId=' + peerId);
 
-  try {
+  try{
+    // اطلب المايك مع خصائص لتحسين الصوت
     localStream = await navigator.mediaDevices.getUserMedia({
       audio: {
         echoCancellation: true,
@@ -105,104 +139,216 @@ async function joinRoom(){
         channelCount: 1
       }
     });
+    // اعرض زر الكتم
+    muteBtn.style.display = 'inline-block';
+    micEnabled = true;
+    muteBtn.textContent = "كتم المايك";
 
+    // سجل وجود الغرفة (meta) لتظهر في قائمة الرومات
+    const roomMetaRef = ref(db, `rooms/${roomName}/meta`);
+    await set(roomMetaRef, { ts: Date.now() });
+
+    // سجل وجودي ضمن peers
     const myPeerRef = ref(db, `rooms/${roomName}/peers/${peerId}`);
     await set(myPeerRef, { id: peerId, ts: Date.now() });
     onDisconnect(myPeerRef).remove();
 
+    // استمع لتحديث قائمة peers وعرضها
     const peersRef = ref(db, `rooms/${roomName}/peers`);
     onValue(peersRef, (snap)=>{
       const data = snap.val() || {};
       const others = Object.keys(data).filter(id=>id!==peerId);
       renderPeersList(others);
-      if(others.length > 4){
-        statusEl.textContent = `⚠️ الروم مزدحمة (${others.length}) — الصوت قد يضعف`;
-      }
+      statusEl.textContent = `✅ متصل في "${roomName}" — ${others.length + 1} متصل(ين) (أنت ضمنهم)`;
+      if(others.length > 3) statusEl.textContent += ' — ⚠️ ازدحام قد يؤثر على الجودة';
     });
 
-    const mySig = ref(db, `signals/${roomName}/${peerId}`);
-    onChildAdded(mySig, async (snap)=>{
-      const msg = snap.val(); if(!msg) return;
-      const { from, type } = msg;
-      if(type==="offer"){
-        await ensurePC(from,false);
+    // استمع للـ signals المرسلة لي
+    const mySigRef = ref(db, `signals/${roomName}/${peerId}`);
+    onChildAdded(mySigRef, async (snap) => {
+      const msg = snap.val();
+      if(!msg) return;
+      log('استلمت رسالة:', msg.type, 'من', msg.from);
+      const from = msg.from;
+      if(msg.type === 'offer'){
+        // استقبل العرض -> أنشئ PC كمستجيب
+        await ensurePC(from, false);
         const pc = pcs[from];
-        await pc.setRemoteDescription(msg.sdp);
-        const ans = await pc.createAnswer();
-        await pc.setLocalDescription(ans);
-        sendSignal(from,{from:peerId,type:"answer",sdp:pc.localDescription});
-      }else if(type==="answer"){
-        const pc = pcs[from]; if(pc) await pc.setRemoteDescription(msg.sdp);
-      }else if(type==="ice"){
-        const pc = pcs[from]; if(pc && msg.candidate) try{await pc.addIceCandidate(msg.candidate);}catch{}
+        try {
+          await pc.setRemoteDescription(msg.sdp);
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          sendSignal(from, { from: peerId, type: 'answer', sdp: pc.localDescription });
+          log('أرسلت answer إلى', from);
+        } catch (e) {
+          log('خطأ أثناء معالجة offer/answer', e);
+        }
+      } else if(msg.type === 'answer'){
+        const pc = pcs[from];
+        if(pc){
+          try {
+            await pc.setRemoteDescription(msg.sdp);
+            log('تم تطبيق answer من', from);
+          } catch(e){ log('answer setRemoteDescription failed', e); }
+        }
+      } else if(msg.type === 'ice'){
+        const pc = pcs[from];
+        if(pc && msg.candidate){
+          try { await pc.addIceCandidate(msg.candidate); } catch(e){ log('addIceCandidate failed', e); }
+        }
       }
-      remove(snap.ref);
+      // إزالة الرسالة بعد معالجتها (تنظيف)
+      try { remove(snap.ref); } catch(e){ /* ignore */ }
     });
 
-    const peersSnap = await new Promise(res=>onValue(peersRef, s=>res(s),{onlyOnce:true}));
-    const peers = peersSnap.val()||{};
-    for(const id in peers){ if(id!==peerId) await ensurePC(id,true); }
+    // بعد التسجيل: اقرأ الموجودين حاليا وأرسل لهم offer (المنضم الجديد هو المبادر)
+    const currentPeersSnap = await get(ref(db, `rooms/${roomName}/peers`));
+    const currentPeers = currentPeersSnap.val() || {};
+    for(const id in currentPeers){
+      if(id === peerId) continue;
+      await ensurePC(id, true); // نبدأ offer إلى كل موجود قبلنا
+    }
+
+    // عند حذف peer من القاعدة -> اغلق الاتصال
+    onChildRemoved(peersRef, (snap)=> {
+      const id = snap.key;
+      if(id && pcs[id]) closePeer(id);
+      log('تمت مغادرة', id);
+    });
 
     statusEl.textContent = `✅ متصل الآن في "${roomName}" — الصوت جاهز`;
-  }catch(e){
-    console.error(e);
-    alert("⚠️ لم يتم فتح المايك. تحقق من الإعدادات.");
-    statusEl.textContent="❌ خطأ في الاتصال.";
+    log('انتهى الانضمام');
+
+    // عرض رسالة تشغل الصوت على الموبايل — نحتاج تفاعل المستخدم لتشغيل autoplay
+    showPlayHintOnce();
+
+  }catch(err){
+    console.error(err);
+    log('خطأ أثناء join:', err.message || err);
+    alert('خطأ في فتح المايك أو الانضمام. تأكد من السماح للمايك والمتصفح يدعم getUserMedia.');
+    statusEl.textContent = '❌ خطأ في الاتصال';
   }
 }
 
-// ===== إنشاء PeerConnection =====
-async function ensurePC(otherId,makeOffer){
+// ==== إنشاء/استرجاع RTCPeerConnection ====
+async function ensurePC(otherId, makeOffer){
   if(pcs[otherId]) return pcs[otherId];
+  log('إنشاء PC مع', otherId, 'initiator=', makeOffer);
   const pc = new RTCPeerConnection(RTC_CONFIG);
   pcs[otherId] = pc;
-  if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
-  pc.ontrack = (e)=>{
+
+  // أضف المسارات المحلية (الميك)
+  if(localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+  // استقبال المسارات
+  pc.ontrack = (ev) => {
+    log('ontrack من', otherId, 'streams=', ev.streams.length);
     if(!audioEls[otherId]){
-      const a=document.createElement("audio");
-      a.autoplay=true; a.srcObject=e.streams[0];
-      audioEls[otherId]=a;
+      const a = document.createElement('audio');
+      a.autoplay = true;
+      a.playsInline = true;
+      a.controls = false;
+      // بعض المتصفحات تحتاج play() بعد تفاعل المستخدم — سنحاول لاحقاً
+      try { a.srcObject = ev.streams[0]; } catch(e){ log('set srcObject failed', e); }
+      audioEls[otherId] = a;
       renderPeersList(Object.keys(pcs));
+      // حاول التشغيل (قد يفشل على الموبايل بدون تفاعل)
+      a.play().catch(()=>{ /* سيتم تشغيل عند تفاعل المستخدم */ });
+    } else {
+      try { audioEls[otherId].srcObject = ev.streams[0]; } catch(e){ log(e); }
     }
   };
-  pc.onicecandidate = (ev)=>{
-    if(ev.candidate) sendSignal(otherId,{from:peerId,type:"ice",candidate:ev.candidate});
+
+  pc.onicecandidate = (evt) => {
+    if(evt.candidate) sendSignal(otherId, { from: peerId, type: 'ice', candidate: evt.candidate });
   };
-  pc.onconnectionstatechange = ()=>{if(["failed","disconnected","closed"].includes(pc.connectionState)) closePeer(otherId);};
+
+  pc.onconnectionstatechange = () => {
+    log('connectionState', otherId, pc.connectionState);
+    if(['failed','disconnected','closed'].includes(pc.connectionState)) closePeer(otherId);
+  };
 
   if(makeOffer){
-    const offer = await pc.createOffer({offerToReceiveAudio:true});
-    await pc.setLocalDescription(offer);
-    sendSignal(otherId,{from:peerId,type:"offer",sdp:pc.localDescription});
+    try {
+      const offer = await pc.createOffer({ offerToReceiveAudio: true });
+      await pc.setLocalDescription(offer);
+      sendSignal(otherId, { from: peerId, type: 'offer', sdp: pc.localDescription });
+      log('أرسلت offer إلى', otherId);
+    } catch(e){
+      log('خطأ أثناء إنشاء offer', e);
+    }
   }
+
   return pc;
 }
 
-// ===== إرسال إشارة =====
-function sendSignal(target,payload){ push(ref(db,`signals/${roomName}/${target}`),payload); }
+// ==== إرسال إشارة (signaling) ====
+function sendSignal(target, payload){
+  try {
+    push(ref(db, `signals/${roomName}/${target}`), payload);
+  } catch(e){ log('sendSignal failed', e); }
+}
 
-// ===== عرض المشاركين =====
+// ==== اغلاق peer وتنظيف ====
+function closePeer(id){
+  const pc = pcs[id];
+  if(pc){
+    try { pc.close(); } catch(e){}
+    delete pcs[id];
+  }
+  if(audioEls[id]){
+    try { audioEls[id].srcObject = null; } catch(e){}
+    try { audioEls[id].remove(); } catch(e){}
+    delete audioEls[id];
+  }
+  renderPeersList(Object.keys(pcs));
+}
+
+// ==== عرض قائمة المشاركين مع عناصر الصوت ==== 
 function renderPeersList(list){
-  peersEl.innerHTML="";
-  if(!list || !list.length){peersEl.innerHTML='<div class="part">لا أحد</div>';return;}
-  list.forEach(id=>{
-    const d=document.createElement("div");
-    d.className="part";
-    d.textContent="مستخدم "+id.slice(0,6);
+  peersEl.innerHTML = '';
+  if(!list || list.length === 0){ peersEl.innerHTML = '<div class="part">لا أحد</div>'; return; }
+  list.forEach(id => {
+    const d = document.createElement('div');
+    d.className = 'part';
+    d.textContent = 'مستخدم ' + id.slice(0,6);
     if(audioEls[id]) d.appendChild(audioEls[id]);
     peersEl.appendChild(d);
   });
 }
 
-// ===== تنظيف عند الخروج =====
-window.addEventListener("beforeunload",()=>{try{ remove(ref(db,`rooms/${roomName}/peers/${peerId}`)); }catch{};});
-
-// ===== تشغيل الصوت بعد أول تفاعل (للموبايل) =====
-document.body.addEventListener("click", () => {
-  Object.values(audioEls).forEach(a => {
-    if (a && a.paused) a.play().catch(()=>{});
-  });
+// ==== عند الخروج التنظيف: ازالة الوجود في قاعدة البيانات ====
+window.addEventListener('beforeunload', ()=>{
+  try { remove(ref(db, `rooms/${roomName}/peers/${peerId}`)); } catch(e){}
 });
+
+// ==== دعم تشغيل الصوت على الموبايل بعد التفاعل ====
+let playHintShown = false;
+function showPlayHintOnce(){
+  if(playHintShown) return;
+  playHintShown = true;
+
+  // عرض overlay بسيط يطلب الضغط لتفعيل الصوت إن لم تعمل عناصر الصوت تلقائياً
+  const ov = document.createElement('div');
+  ov.className = 'overlay';
+  const btn = document.createElement('button');
+  btn.textContent = 'اضغط لتشغيل الصوت (مطلوب للموبايل)';
+  ov.appendChild(btn);
+  document.body.appendChild(ov);
+
+  btn.onclick = () => {
+    // محاولة تشغيل كل عناصر الصوت
+    Object.values(audioEls).forEach(a => { try { a.play().catch(()=>{}); } catch{} });
+    // إذا عندك مسار محلي (اختبار) يمكن تشغيله كذلك
+    document.body.removeChild(ov);
+  };
+
+  // إذا خلال 4 ثواني تم تشغيل شيء، نغلق الـ overlay تلقائيا
+  setTimeout(()=>{ if(document.body.contains(ov)) { /* لا تُغلق تلقائياً لأن المستخدم قد يحتاج الضغط */ } }, 4000);
+}
+
+// ==== طباعة معرف peer للـ debug ====
+log('peerId:', peerId);
 </script>
 </body>
 </html>
